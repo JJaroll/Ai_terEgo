@@ -10,7 +10,7 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
@@ -45,7 +45,10 @@ class ConfigManager(QObject):
             },
             "mic_sensitivity": 1.0,
             "audio_threshold": 0.02,
-            "check_updates": True
+            "check_updates": True,
+            "language": "es",
+            "theme": "dark",
+            "always_on_top": True
         }
         
         self.config_cache = self.load_config()

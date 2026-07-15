@@ -20,6 +20,8 @@ from PyQt6.QtGui import QPixmap, QIcon, QColor, QPainter, QPainterPath
 from ui_components import PillProgressBar
 from hotkey_gui import HotkeyRecorderDialog
 from core_systems import SUPPORTED_MODELS, get_model_path
+from i18n import tr, i18n, LANGUAGES
+from theme_manager import theme_manager, THEME_ORDER
 
 # --- WIDGET PERSONALIZADO: TARJETA DE AVATAR ---
 class AvatarCard(QFrame):
@@ -88,17 +90,17 @@ class AvatarCard(QFrame):
             QMenu::item:selected { background-color: #007ACC; }
         """)
         
-        rename_action = QAction("✏️ Cambiar Nombre", self)
+        rename_action = QAction(tr("avatar.rename"), self)
         rename_action.triggered.connect(lambda: self.rename_requested.emit(self.name))
         menu.addAction(rename_action)
 
-        edit_action = QAction("🖼️ Editar Imágenes", self)
+        edit_action = QAction(tr("avatar.edit_images"), self)
         edit_action.triggered.connect(lambda: self.edit_requested.emit(self.name))
         menu.addAction(edit_action)
 
         if self.name != "Default":
             menu.addSeparator()
-            delete_action = QAction("🗑️ Eliminar Skin", self)
+            delete_action = QAction(tr("avatar.delete_skin"), self)
             delete_action.triggered.connect(lambda: self.delete_requested.emit(self.name))
             menu.addAction(delete_action)
         
@@ -112,47 +114,69 @@ class SettingsDialog(QDialog):
         self.main_window = main_window
         self.bg_manager = main_window.bg_manager
         
-        self.setWindowTitle("Configuración - (AI)terEgo")
-        self.resize(700, 600)
-        
-        self.setStyleSheet("""
-            QDialog { background-color: #1e1e1e; color: white; }
-            QTabWidget::pane { border: 1px solid #333; background: #252525; border-radius: 8px; }
-            QTabBar::tab { background: #333; color: #aaa; padding: 10px 15px; border-top-left-radius: 8px; border-top-right-radius: 8px; margin-right: 4px; font-weight: bold;}
-            QTabBar::tab:selected { background: #252525; color: white; border-bottom: 2px solid #007ACC; }
-            QLabel { color: #ddd; font-size: 13px; }
-            QGroupBox { border: 1px solid #444; border-radius: 8px; margin-top: 20px; font-weight: bold; color: #eee; padding-top: 15px; }
-            QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }
-            QPushButton { background-color: #3a3a3a; color: white; border-radius: 6px; padding: 8px; font-weight: bold; border: 1px solid #555; }
-            QPushButton:hover { background-color: #4a4a4a; border-color: #777; }
-            QSlider::groove:horizontal { border: 1px solid #444; height: 6px; background: #222; border-radius: 3px; }
-            QSlider::handle:horizontal { background: #007ACC; width: 16px; margin: -5px 0; border-radius: 8px; }
-            QComboBox { background: #333; color: white; border: 1px solid #444; padding: 6px; border-radius: 4px; }
-            QScrollArea { border: none; background: transparent; }
-            QTableWidget { background-color: #2b2b2b; border: 1px solid #444; border-radius: 6px; gridline-color: #383838; }
-            QHeaderView::section { background-color: #333; color: #ccc; padding: 5px; border: none; font-weight: bold; }
-            QTableWidget::item { padding: 5px; }
-            QLineEdit { background-color: #333; color: white; border: 1px solid #555; padding: 4px; }
-        """)
+        self.setMinimumSize(640, 520)
+        saved_size = main_window.config_manager.get("settings_window_size", None)
+        if isinstance(saved_size, list) and len(saved_size) == 2:
+            self.resize(max(saved_size[0], 640), max(saved_size[1], 520))
+        else:
+            self.resize(700, 600)
 
         layout = QVBoxLayout(self)
 
         self.tabs = QTabWidget()
         layout.addWidget(self.tabs)
 
-        self.tabs.addTab(self.create_audio_tab(), "🎙️ Audio")
-        self.tabs.addTab(self.create_visual_tab(), "🎨 Apariencia")
-        self.tabs.addTab(self.create_avatar_tab(), "👕 Avatar")
-        self.tabs.addTab(self.create_hotkeys_tab(), "⌨️ Atajos")
-        self.tabs.addTab(self.create_system_tab(), "💻 Sistema")
-        self.tabs.addTab(self.create_about_tab(), "ℹ️ Sobre")
-
-        close_btn = QPushButton("Cerrar")
-        close_btn.setStyleSheet("background-color: #007ACC; border: none;")
-        close_btn.clicked.connect(self.close)
-        layout.addWidget(close_btn)
+        self.close_btn = QPushButton()
+        self.close_btn.clicked.connect(self.close)
+        layout.addWidget(self.close_btn)
 
         self.last_color_hex = "#00E64D"
+
+        self.retranslate_ui()
+        self.apply_theme()
+
+        i18n.language_changed.connect(self.on_language_changed)
+        theme_manager.theme_changed.connect(self.on_theme_changed)
+
+    def retranslate_ui(self):
+        self.setWindowTitle(tr("settings.window_title"))
+
+        current_tab_index = self.tabs.currentIndex()
+        while self.tabs.count():
+            widget = self.tabs.widget(0)
+            self.tabs.removeTab(0)
+            widget.deleteLater()
+
+        self.tabs.addTab(self.create_audio_tab(), tr("tab.audio"))
+        self.tabs.addTab(self.create_visual_tab(), tr("tab.appearance"))
+        self.tabs.addTab(self.create_avatar_tab(), tr("tab.avatar"))
+        self.tabs.addTab(self.create_hotkeys_tab(), tr("tab.hotkeys"))
+        self.tabs.addTab(self.create_system_tab(), tr("tab.system"))
+        self.tabs.addTab(self.create_about_tab(), tr("tab.about"))
+
+        if 0 <= current_tab_index < self.tabs.count():
+            self.tabs.setCurrentIndex(current_tab_index)
+
+        self.close_btn.setText(tr("common.close"))
+        self.close_btn.setStyleSheet(theme_manager.close_button_style())
+
+    def apply_theme(self):
+        self.setStyleSheet(theme_manager.stylesheet())
+        self.close_btn.setStyleSheet(theme_manager.close_button_style())
+
+    def dim_color(self):
+        return theme_manager.colors()['text_dim']
+
+    def on_language_changed(self, lang):
+        self.retranslate_ui()
+
+    def on_theme_changed(self, theme_name):
+        self.apply_theme()
+        self.retranslate_ui()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.main_window.config_manager.set("settings_window_size", [self.width(), self.height()])
 
     def showEvent(self, event):
         self.main_window.audio_thread.audio_data_signal.connect(self.update_audio_bar)
@@ -162,21 +186,28 @@ class SettingsDialog(QDialog):
         try:
             self.main_window.audio_thread.audio_data_signal.disconnect(self.update_audio_bar)
         except: pass
+        try:
+            i18n.language_changed.disconnect(self.on_language_changed)
+        except: pass
+        try:
+            theme_manager.theme_changed.disconnect(self.on_theme_changed)
+        except: pass
         super().closeEvent(event)
 
     def update_audio_bar(self, chunk):
         try:
             rms = np.sqrt(np.mean(chunk**2))
-            level = int(rms * 500) 
+            level = int(rms * 500)
             level = min(100, max(0, level))
-            
+
             if hasattr(self, 'audio_test_bar'):
                 self.audio_test_bar.setValue(level)
-                new_color = "#00E64D"
-                if level > 80: new_color = "#FF3333"
-                elif level > 60: new_color = "#FF8800"
-                elif level > 40: new_color = "#FFFF00"
-                
+                ok, mid, high, danger = theme_manager.level_colors()
+                new_color = ok
+                if level > 80: new_color = danger
+                elif level > 60: new_color = high
+                elif level > 40: new_color = mid
+
                 if new_color != self.last_color_hex:
                     self.audio_test_bar.set_color_hex(new_color)
                     self.last_color_hex = new_color
@@ -199,7 +230,7 @@ class SettingsDialog(QDialog):
         if current_idx in idx_map:
             self.mic_combo.setCurrentIndex(idx_map[current_idx])
         self.mic_combo.currentIndexChanged.connect(self.on_mic_changed)
-        layout.addRow("Dispositivo:", self.mic_combo)
+        layout.addRow(tr("audio.device"), self.mic_combo)
 
         self.sens_slider = QSlider(Qt.Orientation.Horizontal)
         self.sens_slider.setRange(1, 50) 
@@ -209,7 +240,7 @@ class SettingsDialog(QDialog):
         sens_layout = QHBoxLayout()
         sens_layout.addWidget(self.sens_slider)
         sens_layout.addWidget(self.sens_label)
-        layout.addRow("Sensibilidad:", sens_layout)
+        layout.addRow(tr("audio.sensitivity"), sens_layout)
 
         self.thres_slider = QSlider(Qt.Orientation.Horizontal)
         self.thres_slider.setRange(1, 100) 
@@ -219,9 +250,9 @@ class SettingsDialog(QDialog):
         thres_layout = QHBoxLayout()
         thres_layout.addWidget(self.thres_slider)
         thres_layout.addWidget(self.thres_label)
-        layout.addRow("Umbral:", thres_layout)
-        layout.addRow(QLabel(" ")) 
-        lbl_test = QLabel("Prueba de Audio:")
+        layout.addRow(tr("audio.threshold"), thres_layout)
+        layout.addRow(QLabel(" "))
+        lbl_test = QLabel(tr("audio.test"))
         lbl_test.setStyleSheet("font-weight: bold;") 
         self.audio_test_bar = PillProgressBar()
         bar_container = QWidget()
@@ -238,16 +269,16 @@ class SettingsDialog(QDialog):
         layout = QVBoxLayout(tab)
         layout.setContentsMargins(20, 20, 20, 20)
         
-        bg_group = QGroupBox("Color de Fondo")
+        bg_group = QGroupBox(tr("appearance.bg_group"))
         bg_layout = QVBoxLayout()
-        
+
         self.bg_radios = QButtonGroup(self)
-        
+
         opts = [
-            ("Transparente", "transparent"),
-            ("Verde (Chroma)", "#07FD01"),
-            ("Azul (Chroma)", "#0000FE"),
-            ("Semitransparente (Oscuro)", "rgba(0, 0, 0, 100)")
+            (tr("appearance.bg.transparent"), "transparent"),
+            (tr("appearance.bg.green"), "#07FD01"),
+            (tr("appearance.bg.blue"), "#0000FE"),
+            (tr("appearance.bg.semi"), "rgba(0, 0, 0, 100)")
         ]
         
         grid_opts = QGridLayout()
@@ -272,15 +303,15 @@ class SettingsDialog(QDialog):
         bg_layout.addLayout(grid_opts)
 
         custom_layout = QHBoxLayout()
-        self.rb_custom = QRadioButton("Seleccionar Color:")
+        self.rb_custom = QRadioButton(tr("appearance.bg.custom"))
         self.bg_radios.addButton(self.rb_custom)
-        
+
         current_bg = self.main_window.current_background
         is_standard = any(val == current_bg for _, val in opts)
         if not is_standard:
             self.rb_custom.setChecked(True)
 
-        self.btn_pick_color = QPushButton("Elegir Color")
+        self.btn_pick_color = QPushButton(tr("appearance.pick_color"))
         self.btn_pick_color.setFixedSize(100, 35)
         self.btn_pick_color.setStyleSheet("background-color: #444; border: 1px solid #666;")
         self.btn_pick_color.clicked.connect(self.open_color_picker)
@@ -295,14 +326,14 @@ class SettingsDialog(QDialog):
         bg_group.setLayout(bg_layout)
         layout.addWidget(bg_group)
 
-        self.shadow_cb = QCheckBox("Activar Sombra Suave")
+        self.shadow_cb = QCheckBox(tr("appearance.shadow"))
         self.shadow_cb.setChecked(self.main_window.shadow_enabled)
         self.shadow_cb.toggled.connect(self.main_window.set_shadow_enabled)
         layout.addWidget(self.shadow_cb)
 
-        bounce_group = QGroupBox("Animación de Rebote")
+        bounce_group = QGroupBox(tr("appearance.bounce_group"))
         bounce_layout = QFormLayout()
-        self.bounce_cb = QCheckBox("Activar Rebote")
+        self.bounce_cb = QCheckBox(tr("appearance.bounce_enable"))
         self.bounce_cb.setChecked(self.main_window.bounce_enabled)
         self.bounce_cb.toggled.connect(self.main_window.set_bounce_enabled)
         bounce_layout.addRow(self.bounce_cb)
@@ -310,20 +341,45 @@ class SettingsDialog(QDialog):
         self.amp_slider.setRange(0, 50)
         self.amp_slider.setValue(self.main_window.bounce_amplitude)
         self.amp_slider.valueChanged.connect(self.main_window.set_bounce_amplitude)
-        bounce_layout.addRow("Fuerza:", self.amp_slider)
+        bounce_layout.addRow(tr("appearance.bounce_force"), self.amp_slider)
         self.speed_slider = QSlider(Qt.Orientation.Horizontal)
         self.speed_slider.setRange(1, 20)
         self.speed_slider.setValue(int(self.main_window.bounce_speed * 10))
         self.speed_slider.valueChanged.connect(lambda v: self.main_window.set_bounce_speed(v/10))
-        bounce_layout.addRow("Velocidad:", self.speed_slider)
+        bounce_layout.addRow(tr("appearance.bounce_speed"), self.speed_slider)
         bounce_group.setLayout(bounce_layout)
         layout.addWidget(bounce_group)
-        
+
+        theme_group = QGroupBox(tr("appearance.theme_group"))
+        theme_layout = QGridLayout()
+        self.theme_radios = QButtonGroup(self)
+        current_theme = self.main_window.config_manager.get("theme", "dark")
+
+        theme_row, theme_col = 0, 0
+        for theme_key in THEME_ORDER:
+            rb = QRadioButton(tr(f"theme.{theme_key}"))
+            self.theme_radios.addButton(rb)
+            if theme_key == current_theme:
+                rb.setChecked(True)
+            rb.toggled.connect(lambda checked, t=theme_key: self.on_theme_selected(t) if checked else None)
+            theme_layout.addWidget(rb, theme_row, theme_col)
+            theme_col += 1
+            if theme_col > 1:
+                theme_col = 0
+                theme_row += 1
+
+        theme_group.setLayout(theme_layout)
+        layout.addWidget(theme_group)
+
         layout.addStretch()
         return tab
 
+    def on_theme_selected(self, theme_key):
+        theme_manager.set_theme(theme_key)
+        self.main_window.config_manager.set("theme", theme_key)
+
     def open_color_picker(self):
-        color = QColorDialog.getColor(initial=QColor(self.main_window.current_background), parent=self, title="Seleccionar Color de Fondo")
+        color = QColorDialog.getColor(initial=QColor(self.main_window.current_background), parent=self, title=tr("appearance.color_dialog_title"))
         if color.isValid():
             rgba = f"rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()})"
             self.bg_manager.change_background(rgba)
@@ -335,12 +391,12 @@ class SettingsDialog(QDialog):
         layout = QVBoxLayout(tab)
         layout.setContentsMargins(20, 20, 20, 20)
 
-        lbl = QLabel("Gestión de Avatares")
+        lbl = QLabel(tr("avatar.title"))
         lbl.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
         layout.addWidget(lbl)
-        
-        hint = QLabel("💡 Tip: Haz clic derecho en un avatar para cambiarle el nombre o eliminarlo.")
-        hint.setStyleSheet("color: #888; font-size: 11px; margin-bottom: 5px;")
+
+        hint = QLabel(tr("avatar.hint"))
+        hint.setStyleSheet(f"color: {self.dim_color()}; font-size: 11px; margin-bottom: 5px;")
         layout.addWidget(hint)
 
         scroll = QScrollArea()
@@ -358,31 +414,32 @@ class SettingsDialog(QDialog):
 
         layout.addSpacing(10)
 
-        self.btn_create = QPushButton("+  Crear Nuevo Skin")
+        self.btn_create = QPushButton(tr("avatar.create_new_count", count=0, limit=12))
         self.btn_create.setMinimumHeight(45)
         self.btn_create.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_create_style = """
-            QPushButton {
-                background-color: rgba(255, 255, 255, 0.1);
-                border: 1px dashed #666;
+        c = theme_manager.colors()
+        self.btn_create_style = f"""
+            QPushButton {{
+                background-color: {c['btn_bg']};
+                border: 1px dashed {c['border']};
                 border-radius: 10px;
                 font-size: 14px;
-                color: #aaa;
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.2);
-                color: white;
-                border: 1px dashed white;
-            }
+                color: {c['text_dim']};
+            }}
+            QPushButton:hover {{
+                background-color: {c['btn_hover']};
+                color: {c['text']};
+                border: 1px dashed {c['accent']};
+            }}
         """
         self.btn_create.setStyleSheet(self.btn_create_style)
         self.btn_create.clicked.connect(self.open_creator_refresh)
         layout.addWidget(self.btn_create)
 
         h_layout = QHBoxLayout()
-        btn_import = QPushButton("📥 Importar")
+        btn_import = QPushButton(tr("avatar.import"))
         btn_import.clicked.connect(self.import_refresh)
-        btn_export = QPushButton("📤 Exportar")
+        btn_export = QPushButton(tr("avatar.export"))
         btn_export.clicked.connect(self.bg_manager.export_current_skin)
         
         h_layout.addWidget(btn_import)
@@ -407,20 +464,21 @@ class SettingsDialog(QDialog):
         limit = 12
         if count >= limit:
             self.btn_create.setEnabled(False)
-            self.btn_create.setText(f"⚠️ Límite de Skins Alcanzado ({count}/{limit})")
-            self.btn_create.setStyleSheet("""
-                QPushButton {
-                    background-color: rgba(50, 0, 0, 0.3);
-                    border: 1px solid #500;
+            self.btn_create.setText(tr("avatar.limit_reached", count=count, limit=limit))
+            c = theme_manager.colors()
+            self.btn_create.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {c['warn_bg']};
+                    border: 1px solid {c['warn_border']};
                     border-radius: 10px;
                     font-size: 14px;
-                    color: #777;
-                }
+                    color: {c['warn_text']};
+                }}
             """)
-            self.btn_create.setToolTip("Has alcanzado el máximo de 12 skins. Elimina carpetas en 'avatars/' para crear más.")
+            self.btn_create.setToolTip(tr("avatar.limit_tooltip"))
         else:
             self.btn_create.setEnabled(True)
-            self.btn_create.setText(f"+  Crear Nuevo Skin ({count}/{limit})")
+            self.btn_create.setText(tr("avatar.create_new_count", count=count, limit=limit))
             self.btn_create.setStyleSheet(self.btn_create_style)
             self.btn_create.setToolTip("")
 
@@ -457,43 +515,43 @@ class SettingsDialog(QDialog):
         self.refresh_avatar_grid()
     
     def rename_avatar(self, old_name):
-        new_name, ok = QInputDialog.getText(self, "Renombrar Skin", 
-                                          f"Nuevo nombre para '{old_name}':",
+        new_name, ok = QInputDialog.getText(self, tr("avatar.rename_title"),
+                                          tr("avatar.rename_label", name=old_name),
                                           text=old_name)
-        
+
         if ok and new_name:
             new_name = new_name.strip()
             if not new_name: return
             if new_name == old_name: return
 
             success, msg = self.main_window.profile_manager.rename_profile(old_name, new_name)
-            
+
             if success:
                 if self.main_window.profile_manager.current_profile == new_name:
                      self.main_window.config_manager.set("current_profile", new_name)
-                
+
                 self.refresh_avatar_grid()
-                QMessageBox.information(self, "Éxito", f"Renombrado a '{new_name}'")
+                QMessageBox.information(self, tr("common.success"), tr("avatar.rename_success", name=new_name))
             else:
-                QMessageBox.warning(self, "Error", msg)
+                QMessageBox.warning(self, tr("common.error"), msg)
 
     def delete_avatar(self, profile_name):
-        reply = QMessageBox.question(self, "Eliminar Skin", 
-            f"¿Estás seguro de que deseas eliminar permanentemente el skin '{profile_name}'?\n\nEsta acción NO se puede deshacer.",
+        reply = QMessageBox.question(self, tr("avatar.delete_title"),
+            tr("avatar.delete_confirm", name=profile_name),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No)
-        
+
         if reply == QMessageBox.StandardButton.Yes:
             success, msg = self.main_window.profile_manager.delete_profile(profile_name)
-            
+
             if success:
                 if self.main_window.config_manager.get("current_profile") == profile_name:
                      self.main_window.config_manager.set("current_profile", "Default")
-                
+
                 self.refresh_avatar_grid()
-                QMessageBox.information(self, "Eliminado", f"El skin '{profile_name}' ha sido eliminado.")
+                QMessageBox.information(self, tr("avatar.deleted_title"), tr("avatar.deleted_msg", name=profile_name))
             else:
-                QMessageBox.warning(self, "Error", msg)
+                QMessageBox.warning(self, tr("common.error"), msg)
 
     def open_creator_refresh(self):
         self.bg_manager.open_creator()
@@ -509,13 +567,13 @@ class SettingsDialog(QDialog):
         layout = QVBoxLayout(tab)
         layout.setContentsMargins(15, 15, 15, 15)
 
-        lbl = QLabel("Configura las teclas para activar emociones rápidamente.")
-        lbl.setStyleSheet("color: #aaa; margin-bottom: 10px;")
+        lbl = QLabel(tr("hotkeys.description"))
+        lbl.setStyleSheet(f"color: {self.dim_color()}; margin-bottom: 10px;")
         layout.addWidget(lbl)
 
         self.hotkey_table = QTableWidget()
         self.hotkey_table.setColumnCount(3)
-        self.hotkey_table.setHorizontalHeaderLabels(["Acción", "Tecla Actual", ""])
+        self.hotkey_table.setHorizontalHeaderLabels([tr("hotkeys.col_action"), tr("hotkeys.col_key"), ""])
         
         self.hotkey_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.hotkey_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
@@ -537,15 +595,15 @@ class SettingsDialog(QDialog):
         hotkeys = self.main_window.config_manager.get("hotkeys", {})
         
         friendly_names = {
-            "mute_toggle": "🔇 Silenciar / Activar Micrófono",
-            "ai_mode": "🤖 Activar Modo Automático (IA)",
-            "neutral": "😐 Emoción: Neutral",
-            "disgust": "🤢 Emoción: Asco",
-            "fear": "😨 Emoción: Miedo",
-            "happiness": "😄 Emoción: Felicidad",
-            "sadness": "😢 Emoción: Tristeza",
-            "anger": "😡 Emoción: Enojo",
-            "surprise": "😲 Emoción: Sorpresa"
+            "mute_toggle": tr("hotkeys.mute_toggle"),
+            "ai_mode": tr("hotkeys.ai_mode"),
+            "neutral": tr("hotkeys.neutral"),
+            "disgust": tr("hotkeys.disgust"),
+            "fear": tr("hotkeys.fear"),
+            "happiness": tr("hotkeys.happiness"),
+            "sadness": tr("hotkeys.sadness"),
+            "anger": tr("hotkeys.anger"),
+            "surprise": tr("hotkeys.surprise")
         }
         
         order = ["mute_toggle", "ai_mode", "neutral", "happiness", "sadness", "anger", "fear", "disgust", "surprise"]
@@ -573,30 +631,31 @@ class SettingsDialog(QDialog):
         item_key.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         item_key.setFlags(Qt.ItemFlag.ItemIsEnabled)
         
+        c = theme_manager.colors()
         if key_str:
-            item_key.setForeground(QColor("#00E64D")) 
+            item_key.setForeground(QColor(c['level_colors'][0]))
             item_key.setFont(self.get_bold_font())
         else:
-            item_key.setForeground(QColor("#777"))
-            
+            item_key.setForeground(QColor(c['text_dim']))
+
         self.hotkey_table.setItem(row, 1, item_key)
 
-        btn = QPushButton("✏️ Cambiar")
+        btn = QPushButton(tr("hotkeys.change_btn"))
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
         btn.setFixedSize(100, 30)
-        btn.setStyleSheet("""
-            QPushButton { 
-                background-color: #3a3a3a; 
-                border: 1px solid #555; 
-                border-radius: 4px; 
+        btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {c['btn_bg']};
+                border: 1px solid {c['btn_border']};
+                border-radius: 4px;
                 font-size: 12px;
-                color: #ddd;
-            }
-            QPushButton:hover { 
-                background-color: #4a4a4a; 
-                border-color: #777; 
-                color: white;
-            }
+                color: {c['btn_text']};
+            }}
+            QPushButton:hover {{
+                background-color: {c['btn_hover']};
+                border-color: {c['btn_hover_border']};
+                color: {c['text']};
+            }}
         """)
         btn.clicked.connect(lambda _, a=action: self.record_key(a))
         
@@ -653,109 +712,141 @@ class SettingsDialog(QDialog):
                 self.btn_open_model.setEnabled(True)
                 self.current_model_path = path
             else:
-                self.lbl_model_path.setText("⚠️ Modelo no descargado")
+                self.lbl_model_path.setText(tr("system.model_not_downloaded"))
                 self.btn_open_model.setEnabled(False)
                 self.current_model_path = None
 
         # 2. Emociones
         if hasattr(self, 'lbl_emotions'):
             emotions = ", ".join(model_config["avatar_states"])
-            self.lbl_emotions.setText(f"Emociones: {emotions}")
+            self.lbl_emotions.setText(tr("system.emotions_label", emotions=emotions))
 
     def open_model_folder(self):
         if hasattr(self, 'current_model_path') and self.current_model_path:
             QDesktopServices.openUrl(QUrl.fromLocalFile(self.current_model_path))
 
-    # --- PESTAÑA SISTEMA CORREGIDA ---
+    # --- PESTAÑA SISTEMA ---
     def create_system_tab(self):
         tab = QWidget()
-        layout = QVBoxLayout(tab)
+        outer_layout = QVBoxLayout(tab)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("background-color: transparent;")
+        outer_layout.addWidget(scroll)
+
+        content = QWidget()
+        content.setStyleSheet("background-color: transparent;")
+        layout = QVBoxLayout(content)
         layout.setContentsMargins(30, 30, 30, 30)
         layout.setSpacing(20)
 
-        ai_group = QGroupBox("Configuración de IA")
+        lang_group = QGroupBox(tr("system.language_group"))
+        lang_layout = QFormLayout()
+        self.lang_combo = QComboBox()
+        current_lang = self.main_window.config_manager.get("language", "es")
+        for code, label in LANGUAGES.items():
+            self.lang_combo.addItem(label, code)
+            if code == current_lang:
+                self.lang_combo.setCurrentIndex(self.lang_combo.count() - 1)
+        self.lang_combo.currentIndexChanged.connect(self.on_language_selected)
+        lang_layout.addRow(tr("system.language_label"), self.lang_combo)
+        lang_group.setLayout(lang_layout)
+        layout.addWidget(lang_group)
+
+        window_group = QGroupBox(tr("system.window_group"))
+        window_layout = QVBoxLayout()
+        self.chk_always_on_top = QCheckBox(tr("system.always_on_top"))
+        self.chk_always_on_top.setChecked(self.main_window.config_manager.get("always_on_top", True))
+        self.chk_always_on_top.toggled.connect(lambda v: self.main_window.set_always_on_top(v))
+        window_layout.addWidget(self.chk_always_on_top)
+        window_group.setLayout(window_layout)
+        layout.addWidget(window_group)
+
+        ai_group = QGroupBox(tr("system.ai_group"))
         ai_layout = QFormLayout()
-        
+
         self.model_combo = QComboBox()
         current_model = self.main_window.config_manager.get("ai_model", "spanish")
-        
+
         for key, config in SUPPORTED_MODELS.items():
             self.model_combo.addItem(f"{config['name']}", key)
             if key == current_model:
                 self.model_combo.setCurrentIndex(self.model_combo.count() - 1)
-        
+
         self.model_combo.setMinimumWidth(400)
-        
+
         self.model_combo.currentIndexChanged.connect(self.on_model_changed)
-        
-        ai_layout.addRow("Modelo de Voz:", self.model_combo)
-        lbl_info = QLabel("Nota: Cambiar el modelo puede requerir una descarga adicional (300MB - 1.2GB).")
-        lbl_info.setStyleSheet("color: #777; font-size: 11px; font-style: italic;")
+
+        ai_layout.addRow(tr("system.voice_model"), self.model_combo)
+        lbl_info = QLabel(tr("system.model_note"))
+        lbl_info.setStyleSheet(f"color: {self.dim_color()}; font-size: 11px; font-style: italic;")
         ai_layout.addRow("", lbl_info)
 
-        self.lbl_model_path = QLabel("Cargando ruta...")
-        self.lbl_model_path.setStyleSheet("color: #aaa; font-family: monospace; font-size: 10px;")
+        self.lbl_model_path = QLabel(tr("system.loading_path"))
+        self.lbl_model_path.setStyleSheet(f"color: {self.dim_color()}; font-family: monospace; font-size: 10px;")
         self.lbl_model_path.setWordWrap(True)
-        
+
         self.btn_open_model = QPushButton("📂")
         self.btn_open_model.setFixedSize(30, 30)
-        self.btn_open_model.setToolTip("Abrir en Explorador")
+        self.btn_open_model.setToolTip(tr("system.open_in_explorer"))
         self.btn_open_model.clicked.connect(self.open_model_folder)
-        
+
         path_layout = QHBoxLayout()
         path_layout.addWidget(self.lbl_model_path)
         path_layout.addWidget(self.btn_open_model)
-        
-        ai_layout.addRow(QLabel("Ruta del Modelo:"))
+
+        ai_layout.addRow(QLabel(tr("system.model_path")))
         ai_layout.addRow(path_layout)
 
         self.lbl_emotions = QLabel()
         self.lbl_emotions.setWordWrap(True)
-        self.lbl_emotions.setStyleSheet("color: #ccc; font-size: 11px;")
-        
-        ai_layout.addRow(QLabel("Emociones Soportadas:"))
+        self.lbl_emotions.setStyleSheet(f"color: {self.dim_color()}; font-size: 11px;")
+
+        ai_layout.addRow(QLabel(tr("system.emotions_supported")))
         ai_layout.addRow(self.lbl_emotions)
-        
+
         # Inicializar info con el modelo actual
         self.update_model_info(current_model)
-        
+
         ai_group.setLayout(ai_layout)
         layout.addWidget(ai_group)
 
-        path_group = QGroupBox("Ubicación del Proyecto")
-        path_layout = QVBoxLayout()
+        path_group = QGroupBox(tr("system.project_location"))
+        project_path_layout = QVBoxLayout()
         current_path = os.getcwd()
         lbl_path = QLabel(f"{current_path}")
         lbl_path.setWordWrap(True)
-        lbl_path.setStyleSheet("color: #aaa; font-family: monospace;")
-        path_layout.addWidget(lbl_path)
-        
-        btn_open_folder = QPushButton("Abrir Carpeta")
+        lbl_path.setStyleSheet(f"color: {self.dim_color()}; font-family: monospace;")
+        project_path_layout.addWidget(lbl_path)
+
+        btn_open_folder = QPushButton(tr("system.open_folder"))
         btn_open_folder.setFixedSize(120, 30)
         btn_open_folder.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(current_path)))
-        path_layout.addWidget(btn_open_folder)
-        path_group.setLayout(path_layout)
+        project_path_layout.addWidget(btn_open_folder)
+        path_group.setLayout(project_path_layout)
         layout.addWidget(path_group)
 
-        size_group = QGroupBox("Almacenamiento")
+        size_group = QGroupBox(tr("system.storage_group"))
         size_layout = QFormLayout()
 
         # Checkbox de actualizaciones
-        self.chk_updates = QCheckBox("Buscar actualizaciones automáticamente al iniciar")
+        self.chk_updates = QCheckBox(tr("system.check_updates"))
         self.chk_updates.setChecked(self.main_window.config_manager.get("check_updates", True))
         self.chk_updates.toggled.connect(lambda v: self.main_window.config_manager.set("check_updates", v))
         size_layout.addRow("", self.chk_updates)
-        
-        # --- FIX PARA MAC: Evitamos os.walk en modo empaquetado ---
+
+        # --- Evitamos os.walk en modo empaquetado ---
         if getattr(sys, 'frozen', False):
-            size_layout.addRow("Peso Total:", QLabel("(Cálculo desactivado en App)"))
-            size_layout.addRow("Archivos:", QLabel("(Oculto por rendimiento)"))
+            size_layout.addRow(tr("system.total_size"), QLabel(tr("system.calc_disabled")))
+            size_layout.addRow(tr("system.files_count"), QLabel(tr("system.hidden_perf")))
         else:
             try:
                 total_size = 0
                 file_count = 0
                 exclude_dirs = {'venv', '.git', '__pycache__', '.idea', '.vscode'}
-                
+
                 for dirpath, dirnames, filenames in os.walk(current_path):
                     dirnames[:] = [d for d in dirnames if d not in exclude_dirs]
                     for f in filenames:
@@ -763,28 +854,36 @@ class SettingsDialog(QDialog):
                         if not os.path.islink(fp):
                             total_size += os.path.getsize(fp)
                             file_count += 1
-                
+
                 size_str = f"{total_size / (1024*1024):.2f} MB"
-                size_layout.addRow("Peso Total (aprox):", QLabel(size_str))
-                size_layout.addRow("Archivos:", QLabel(str(file_count)))
+                size_layout.addRow(tr("system.total_size"), QLabel(size_str))
+                size_layout.addRow(tr("system.files_count"), QLabel(str(file_count)))
             except Exception as e:
-                size_layout.addRow("Estado:", QLabel("Error de cálculo"))
+                size_layout.addRow(tr("system.calc_status"), QLabel(tr("system.calc_error")))
 
         size_group.setLayout(size_layout)
         layout.addWidget(size_group)
 
-        tech_group = QGroupBox("Entorno de Ejecución")
+        tech_group = QGroupBox(tr("system.env_group"))
         tech_layout = QFormLayout()
-        
-        tech_layout.addRow("Sistema Operativo:", QLabel(f"{platform.system()} {platform.release()}"))
-        tech_layout.addRow("Arquitectura:", QLabel(platform.machine()))
-        tech_layout.addRow("Versión de Python:", QLabel(platform.python_version()))
-        
+
+        tech_layout.addRow(tr("system.os_label"), QLabel(f"{platform.system()} {platform.release()}"))
+        tech_layout.addRow(tr("system.arch_label"), QLabel(platform.machine()))
+        tech_layout.addRow(tr("system.python_version_label"), QLabel(platform.python_version()))
+
         tech_group.setLayout(tech_layout)
         layout.addWidget(tech_group)
 
         layout.addStretch()
+
+        scroll.setWidget(content)
         return tab
+
+    def on_language_selected(self, index):
+        code = self.lang_combo.currentData()
+        if code:
+            self.main_window.config_manager.set("language", code)
+            i18n.set_language(code)
 
     # --- PESTAÑA ABOUT ---
     def create_about_tab(self):
@@ -811,54 +910,69 @@ class SettingsDialog(QDialog):
         lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_icon)
 
+        c = theme_manager.colors()
+
         lbl_title = QLabel("(AI)terEgo")
-        lbl_title.setStyleSheet("font-size: 24px; font-weight: bold; color: white;")
+        lbl_title.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {c['text']};")
         lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_title)
 
         if hasattr(self.main_window, 'current_version'):
-            version_text = f"Versión {self.main_window.current_version}"
+            version_text = tr("about.version", version=self.main_window.current_version)
         else:
-            version_text = "Versión: Desconocida"
+            version_text = tr("about.version_unknown")
 
         lbl_ver = QLabel(version_text)
-        lbl_ver.setStyleSheet("color: #888; font-size: 14px;")
+        lbl_ver.setStyleSheet(f"color: {c['text_dim']}; font-size: 14px;")
         lbl_ver.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_ver)
 
-        desc_text = (
-            "Un avatar virtual inteligente que reacciona a tu voz y emociones "
-            "en tiempo real utilizando Inteligencia Artificial."
-        )
-        lbl_desc = QLabel(desc_text)
+        lbl_desc = QLabel(tr("about.description"))
         lbl_desc.setWordWrap(True)
         lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl_desc.setStyleSheet("color: #ccc; margin: 10px 0;")
+        lbl_desc.setStyleSheet(f"color: {c['text_dim']}; margin: 10px 0;")
         layout.addWidget(lbl_desc)
 
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
-        line.setStyleSheet("background-color: #444;")
+        line.setStyleSheet(f"background-color: {c['border']};")
         layout.addWidget(line)
 
-        lbl_credits = QLabel("Desarrollado por <b>JJaroll</b>")
+        lbl_credits = QLabel(tr("about.developed_by"))
+        lbl_credits.setStyleSheet(f"color: {c['text']};")
         lbl_credits.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_credits)
 
-        lbl_tech = QLabel("Powered by Python, PyQt6 & PyTorch")
-        lbl_tech.setStyleSheet("color: #666; font-size: 11px;")
+        lbl_tech = QLabel(tr("about.powered_by"))
+        lbl_tech.setStyleSheet(f"color: {c['text_dim']}; font-size: 11px;")
         lbl_tech.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_tech)
 
-        lbl_license = QLabel("Distribuido bajo Licencia MIT")
-        lbl_license.setStyleSheet("color: #555; font-size: 11px; font-style: italic;")
+        lbl_license = QLabel(tr("about.license"))
+        lbl_license.setStyleSheet(f"color: {c['text_dim']}; font-size: 11px; font-style: italic;")
         lbl_license.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_license)
 
         layout.addSpacing(20)
 
-        btn_github = QPushButton("  Ver en GitHub")
+        btn_kofi = QPushButton(tr("about.support_kofi"))
+        btn_kofi.setStyleSheet("""
+            QPushButton {
+                background-color: #FF5E5B;
+                color: white;
+                border: 1px solid #E04B48;
+                border-radius: 5px;
+                padding: 8px 15px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #ff7a77; }
+        """)
+        btn_kofi.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_kofi.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://ko-fi.com/jjaroll")))
+        layout.addWidget(btn_kofi)
+
+        btn_github = QPushButton(tr("about.view_github"))
         btn_github.setStyleSheet("""
             QPushButton {
                 background-color: #24292e;
@@ -871,20 +985,20 @@ class SettingsDialog(QDialog):
             QPushButton:hover { background-color: #2f363d; }
         """)
         btn_github.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_github.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/JJaroll/PngTuber_IA")))
-        
-        btn_bug = QPushButton("🐛 Reportar un Problema")
-        btn_bug.setStyleSheet("""
-            QPushButton {
+        btn_github.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/JJaroll/Ai_terego")))
+
+        btn_bug = QPushButton(tr("about.report_bug"))
+        btn_bug.setStyleSheet(f"""
+            QPushButton {{
                 background-color: transparent;
-                color: #aaa;
+                color: {c['text_dim']};
                 border: none;
                 text-decoration: underline;
-            }
-            QPushButton:hover { color: #fff; }
+            }}
+            QPushButton:hover {{ color: {c['text']}; }}
         """)
         btn_bug.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_bug.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/JJaroll/PngTuber_IA/issues")))
+        btn_bug.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/JJaroll/Ai_terego/issues")))
 
         layout.addWidget(btn_github)
         layout.addWidget(btn_bug)

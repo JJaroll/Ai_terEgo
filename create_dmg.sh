@@ -10,7 +10,7 @@ echo "    ║ ██╗  ██║██╗  ██║ ██╔══██║�
 echo "    ║ ╚█████╔╝╚█████╔╝ ██║  ██║██║  ██║╚██████╔╝███████╗███████╗           ║"
 echo "    ║  ╚════╝  ╚════╝  ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝           ║"
 echo "    ║                                                                      ║"
-echo "    ║   (AI)terEgo v1.0.0 - \"Dando vida a los píxeles.\"                    ║"
+echo "    ║   (AI)terEgo v1.1.0 - \"Dando vida a los píxeles.\"                    ║"
 echo "    ║   GitHub: github.com/JJaroll                                         ║"
 echo "    ║                                                                      ║"
 echo "    ╚══════════════════════════════════════════════════════════════════════╝"
@@ -21,7 +21,7 @@ ENTRY_POINT="main.py"
 ICON_PATH="assets/app_icon.icns"
 ENTITLEMENTS="entitlements.plist"
 DMG_NAME="Ai_terego_Silicon.dmg"
-VENV_NAME="pngtuberIA" # <--- Tu nombre personalizado de venv
+VENV_NAME="pngtuberIA"
 
 # Asegurar que el script se ejecute desde su propia ubicación
 cd "$(dirname "$0")"

@@ -23,5 +23,12 @@
     "audio_threshold": 0.024,
     "tutorial_completed": true,
     "ai_model": "english",
-    "check_updates": true
+    "check_updates": true,
+    "language": "es",
+    "theme": "dark",
+    "settings_window_size": [
+        718,
+        837
+    ],
+    "always_on_top": false
 }

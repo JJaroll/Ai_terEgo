@@ -10,7 +10,7 @@ echo "    ║ ██╗  ██║██╗  ██║ ██╔══██║�
 echo "    ║ ╚█████╔╝╚█████╔╝ ██║  ██║██║  ██║╚██████╔╝███████╗███████╗           ║"
 echo "    ║  ╚════╝  ╚════╝  ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝           ║"
 echo "    ║                                                                      ║"
-echo "    ║   (AI)terEgo v1.0.0 - \"Dando vida a los píxeles.\"                    ║"
+echo "    ║   (AI)terEgo v1.1.0 - \"Dando vida a los píxeles.\"                    ║"
 echo "    ║   GitHub: github.com/JJaroll                                         ║"
 echo "    ║                                                                      ║"
 echo "    ╚══════════════════════════════════════════════════════════════════════╝"
@@ -19,7 +19,7 @@ echo "    ╚══════════════════════�
 APP_NAME="(AI)terEgo"
 ENTRY_POINT="main.py"
 PKG_NAME="aiterego"
-VERSION="1.0.0"
+VERSION="1.1.0"
 TAR_NAME="Ai_terEgo_Linux_CPU.tar.gz"
 DEB_NAME="Ai_terEgo_Linux_CPU.deb"
 

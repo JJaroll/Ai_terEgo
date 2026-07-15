@@ -10,13 +10,15 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QLabel, QTextEdit, QPushButton, QHBoxLayout
 from PyQt6.QtGui import QPainter, QBrush, QColor, QPen, QFont
 from PyQt6.QtCore import Qt, QRect, QPoint
+
+from i18n import tr
 
 class PillProgressBar(QWidget):
     def __init__(self, parent=None):
@@ -83,17 +85,17 @@ class TutorialOverlay(QWidget):
         rect = self.rect()
         center = rect.center()
         
-        painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, "Flip: Ctrl+F\nClick derecho: Menú")
-        
+        painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, tr("tutorial.hint"))
+
         start_arrow = QPoint(center.x(), rect.bottom() - 60)
         end_arrow = QPoint(center.x(), rect.bottom() - 20)
         painter.drawLine(start_arrow, end_arrow)
-        
+
         painter.setFont(QFont("Arial", 12))
-        painter.drawText(start_arrow.x() - 60, start_arrow.y() - 5, "Controles")
-        
+        painter.drawText(start_arrow.x() - 60, start_arrow.y() - 5, tr("tutorial.controls"))
+
         painter.setFont(QFont("Arial", 10, QFont.Weight.Normal))
-        painter.drawText(rect.adjusted(0, 0, 0, -50), Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, "Haz clic para comenzar")
+        painter.drawText(rect.adjusted(0, 0, 0, -50), Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, tr("tutorial.click_start"))
 
     def mousePressEvent(self, event):
         if self.parent_window:
@@ -105,7 +107,7 @@ class TutorialOverlay(QWidget):
 class DownloadDialog(QDialog):
     def __init__(self, model_name, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Descargando Modelo IA")
+        self.setWindowTitle(tr("download.title"))
         self.setFixedSize(400, 150)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.CustomizeWindowHint | Qt.WindowType.WindowTitleHint)
         self.setModal(True) 
@@ -115,12 +117,12 @@ class DownloadDialog(QDialog):
         layout.setContentsMargins(20, 20, 20, 20)
 
         # Icono y Título
-        lbl_title = QLabel(f"Descargando: {model_name}")
+        lbl_title = QLabel(tr("download.downloading", model=model_name))
         lbl_title.setStyleSheet("font-weight: bold; font-size: 14px; color: white;")
         lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_title)
 
-        lbl_info = QLabel("Esto puede tardar unos minutos dependiendo de tu internet (aprox. 300MB - 1GB). Por favor espera.")
+        lbl_info = QLabel(tr("download.info"))
         lbl_info.setWordWrap(True)
         lbl_info.setStyleSheet("color: #aaa; font-size: 11px;")
         lbl_info.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -154,7 +156,7 @@ class DownloadDialog(QDialog):
         layout.addWidget(self.log_console)
 
         # Botón de Cancelar
-        self.btn_cancel = QPushButton("Cancelar")
+        self.btn_cancel = QPushButton(tr("common.cancel"))
         self.btn_cancel.setStyleSheet("""
             QPushButton {
                 background-color: #ff4444;
