@@ -10,7 +10,7 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
@@ -211,15 +211,21 @@ class AudioMonitorThread(QThread):
 
         try:
             self.stream = self.p.open(
-                format=FORMAT, 
-                channels=CHANNELS, 
-                rate=RATE, 
-                input=True, 
+                format=FORMAT,
+                channels=CHANNELS,
+                rate=RATE,
+                input=True,
                 input_device_index=self.device_index,
                 frames_per_buffer=CHUNK_SIZE
             )
+            try:
+                dev_info = self.p.get_default_input_device_info() if self.device_index is None \
+                    else self.p.get_device_info_by_index(self.device_index)
+                print(f"🎤 Stream de audio abierto (device_index={self.device_index}, name='{dev_info.get('name')}')")
+            except Exception:
+                print(f"🎤 Stream de audio abierto (device_index={self.device_index})")
         except Exception as e:
-            print(f"Error abriendo stream: {e}")
+            print(f"❌ Error abriendo stream: {e}")
             self.stream = None
 
     def change_device(self, index):
@@ -245,6 +251,8 @@ class AudioMonitorThread(QThread):
         return devices
 
     def run(self):
+        read_error_count = 0
+        silent_chunk_count = 0
         while self.running:
             # 1. VERIFICAR SI HAY UN CAMBIO PENDIENTE
             if self.trigger_device_change:
@@ -257,14 +265,39 @@ class AudioMonitorThread(QThread):
                 try:
                     data = self.stream.read(CHUNK_SIZE, exception_on_overflow=False)
                     chunk = np.frombuffer(data, dtype=np.float32)
-                    
+
+                    if read_error_count:
+                        print(f"🎤 Lectura de audio recuperada tras {read_error_count} error(es)")
+                        read_error_count = 0
+
+                    # Si el stream nunca entrega una muestra distinta de cero,
+                    # típicamente es macOS negando el micrófono en silencio
+                    # (TCC), no un error de PortAudio: no lanza excepción,
+                    # simplemente no llegan datos reales.
+                    if not np.any(chunk):
+                        silent_chunk_count += 1
+                        if silent_chunk_count in (50, 500):  # ~1s y ~10s de silencio total
+                            print(f"⚠️ {silent_chunk_count} chunks de audio consecutivos en absoluto silencio "
+                                  f"(todo ceros). Si estás hablando y esto persiste, revisa el permiso de "
+                                  f"micrófono en Ajustes del Sistema > Privacidad y Seguridad.")
+                    else:
+                        silent_chunk_count = 0
+
                     # Aplicar sensibilidad
                     chunk = chunk * self.sensitivity
-                    
+
                     rms = np.sqrt(np.mean(chunk**2))
-                    self.volume_signal.emit(rms > self.threshold)
+                    # bool(...) es obligatorio: "rms > self.threshold" da un
+                    # numpy.bool_, y pyqtSignal(bool) en PyQt6 lo rechaza en
+                    # tiempo de ejecución ("unexpected type 'numpy.bool'"),
+                    # lo que tronaba esta línea en CADA chunk y por lo tanto
+                    # nunca llegaba a emitir audio_data_signal más abajo.
+                    self.volume_signal.emit(bool(rms > self.threshold))
                     self.audio_data_signal.emit(chunk)
-                except:
+                except Exception as e:
+                    read_error_count += 1
+                    if read_error_count in (1, 20, 100):
+                        print(f"❌ Error leyendo audio (x{read_error_count}): {e}")
                     time.sleep(0.1) # Pausa breve si hay error de lectura
                     continue
             else:

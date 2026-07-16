@@ -12,13 +12,15 @@ env/
 # === Compilación (PyInstaller) y Lanzamientos ===
 build/
 dist/
-*.spec
 *.zip
 *.dmg
 crash_log.txt
 
 # === Datos de la Aplicación y Caché de IA ===
-avatars/
+# Se ignoran todos los skins/imagenes de avatars/, excepto el skin "Default"
+# (ese sí debe subirse porque la app lo necesita para funcionar de fábrica).
+avatars/*
+!avatars/Default/
 models/
 hf_cache/
 .cache/

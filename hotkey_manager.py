@@ -10,7 +10,7 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
@@ -54,9 +54,7 @@ class HotkeyManager(QObject):
         for action, key_str in final_hotkeys.items():
             if key_str:
                 try:
-                    # Limpiamos y formateamos la tecla
                     clean_str = str(key_str).replace("<", "").replace(">", "").title()
-                    # QKeySequence calcula el código entero único para esa tecla
                     seq = QKeySequence(clean_str)
                     if not seq.isEmpty():
                         qt_code = seq[0].toCombined()
@@ -81,10 +79,10 @@ class HotkeyManager(QObject):
 
     def _safe_get_value(self, obj):
         try:
-            return obj.value # Para PyQt6 Enums
+            return obj.value 
         except AttributeError:
             try:
-                return int(obj) # Para enteros normales
+                return int(obj) 
             except:
                 return 0
 
@@ -99,12 +97,12 @@ class HotkeyManager(QObject):
                     return super().eventFilter(obj, event)
                 current_combo = key_val | mod_val
                 
-                # 4. Verificar coincidencia
+                # Verificar coincidencia
                 if current_combo in self.key_map:
                     action = self.key_map[current_combo]
                     print(f"⚡ Acción ejecutada: {action}")
                     self.hotkey_triggered.emit(action)
-                    return True # Consumir evento
+                    return True
                     
         except Exception as e:
             # En caso de error, NO abortamos la app, solo lo reportamos y continuamos

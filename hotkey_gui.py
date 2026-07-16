@@ -10,30 +10,31 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
-from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLabel, 
+from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLabel,
                              QPushButton, QTableWidget, QTableWidgetItem, QHeaderView,
                              QMessageBox)
 from PyQt6.QtCore import Qt
+from i18n import tr
 try:
     from pynput.keyboard import Key, KeyCode
-except: pass # Solo para verificacion visual si fuera necesario
+except: pass
 
 class HotkeyRecorderDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Grabando...")
+        self.setWindowTitle(tr("hotkey_dialog.title"))
         self.setFixedSize(300, 150)
         self.layout = QVBoxLayout(self)
-        self.label = QLabel("Presiona una tecla ahora...")
+        self.label = QLabel(tr("hotkey_dialog.label"))
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setStyleSheet("font-size: 14px; font-weight: bold;")
         self.layout.addWidget(self.label)
-        
-        cancel = QPushButton("Cancelar")
+
+        cancel = QPushButton(tr("common.cancel"))
         cancel.clicked.connect(self.reject)
         self.layout.addWidget(cancel)
 

@@ -10,7 +10,7 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
@@ -36,6 +36,8 @@ from core_systems import AudioMonitorThread, EmotionThread, SUPPORTED_MODELS, Mo
 from update_manager import UpdateChecker, CURRENT_VERSION
 from settings_window import SettingsDialog
 from ui_components import PillProgressBar, DownloadDialog, TutorialOverlay
+from i18n import tr, i18n
+from theme_manager import theme_manager
 
 def resource_path(relative_path):
     try:
@@ -54,6 +56,11 @@ class PNGTuberApp(QMainWindow):
         self.config = self.config_manager.load_config()
         self.current_version = CURRENT_VERSION
 
+        # Idioma y Tema (deben establecerse antes de construir cualquier widget)
+        i18n.language = self.config.get("language", "es")
+        theme_manager.current = self.config.get("theme", "dark")
+        i18n.language_changed.connect(self.retranslate_ui)
+
         # Estado
         self.current_emotion = "neutral"
         self.is_speaking = False
@@ -69,6 +76,7 @@ class PNGTuberApp(QMainWindow):
         self.shadow_enabled = self.config.get("shadow_enabled", True)
         self.current_background = self.config.get("background_color", "transparent")
         self.is_flipped = False
+        self.always_on_top = self.config.get("always_on_top", True)
 
         # Gestores
         self.profile_manager = AvatarProfileManager()
@@ -135,20 +143,20 @@ class PNGTuberApp(QMainWindow):
         self.setWindowIcon(QIcon(icon_path))
 
         # Flags Cruciales para Mac
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        self.setWindowFlags(self.base_window_flags())
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.resize(500, 500) 
+        self.resize(500, 500)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
         self.layout.setContentsMargins(5, 5, 5, 5)
 
-        # --- BARRA SUPERIOR (Mac Style + Update Badge) ---
+        # --- BARRA SUPERIOR ---
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(13, 13, 13, 0) 
         
-        # 1. Controles Mac (Izquierda)
+        # 1. Controles Mac
         self.mac_controls = MacWindowControls(self)
         self.mac_controls.close_signal.connect(self.close)
         self.mac_controls.minimize_signal.connect(self.showMinimized)
@@ -157,8 +165,8 @@ class PNGTuberApp(QMainWindow):
         # 2. Espacio flexible
         top_bar.addStretch()
 
-        # 3. Botón de Actualización 
-        self.update_btn = QPushButton("⬇️  Update Available")
+        # 3. Botón de Actualización
+        self.update_btn = QPushButton(tr("update.badge_default"))
         self.update_btn.setVisible(False) 
         self.update_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.update_btn.setFixedHeight(24)
@@ -218,25 +226,25 @@ class PNGTuberApp(QMainWindow):
         """
 
         # --- GRUPO 1: UTILIDADES ---
-        self.mute_btn = QPushButton("🔊")
+        self.mute_btn = QPushButton("🔇" if self.is_muted else "🔊")
         self.mute_btn.setFixedSize(36, 36)
         self.mute_btn.setCheckable(True)
         self.mute_btn.setChecked(self.is_muted)
-        self.mute_btn.setToolTip("Silenciar / Activar Micrófono")
+        self.mute_btn.setToolTip(tr("tooltip.mute"))
         self.mute_btn.setStyleSheet(btn_style + "QPushButton:checked { background-color: #ff5555; color: white; }")
         self.mute_btn.clicked.connect(lambda: self.set_muted(not self.is_muted)) # Fix Lambda logic
         bottom_layout.addWidget(self.mute_btn)
 
         self.flip_btn = QPushButton("🔄")
         self.flip_btn.setFixedSize(36, 36)
-        self.flip_btn.setToolTip("Voltear Avatar (Espejo)")
+        self.flip_btn.setToolTip(tr("tooltip.flip"))
         self.flip_btn.setStyleSheet(btn_style)
         self.flip_btn.clicked.connect(self.toggle_flip)
         bottom_layout.addWidget(self.flip_btn)
 
         self.settings_btn = QPushButton("⚙️")
         self.settings_btn.setFixedSize(36, 36)
-        self.settings_btn.setToolTip("Abrir Configuración")
+        self.settings_btn.setToolTip(tr("tooltip.settings"))
         self.settings_btn.setStyleSheet(btn_style)
         self.settings_btn.clicked.connect(self.open_settings_window)
         bottom_layout.addWidget(self.settings_btn)
@@ -252,8 +260,8 @@ class PNGTuberApp(QMainWindow):
         bottom_layout.addLayout(self.emotions_layout) 
 
         self.expand_btn = QPushButton("›")
-        self.expand_btn.setFixedSize(24, 36) 
-        self.expand_btn.setToolTip("Ver más emociones")
+        self.expand_btn.setFixedSize(24, 36)
+        self.expand_btn.setToolTip(tr("tooltip.more_emotions"))
         self.expand_btn.setStyleSheet("""
             QPushButton { 
                 background-color: rgba(255,255,255,50); 
@@ -315,13 +323,13 @@ class PNGTuberApp(QMainWindow):
             supported_states = {"neutral"}
 
         master_emotions = [
-            ("neutral", "😐", "Neutral"),
-            ("happy", "😄", "Feliz"),
-            ("sad", "😢", "Triste"),
-            ("angry", "😠", "Enojado"),
-            ("fear", "😨", "Miedo"),
-            ("disgust", "🤢", "Asco"), 
-            ("surprise", "😲", "Sorpresa")   
+            ("neutral", "😐", tr("emotion.neutral")),
+            ("happy", "😄", tr("emotion.happy")),
+            ("sad", "😢", tr("emotion.sad")),
+            ("angry", "😠", tr("emotion.angry")),
+            ("fear", "😨", tr("emotion.fear")),
+            ("disgust", "🤢", tr("emotion.disgust")),
+            ("surprise", "😲", tr("emotion.surprise"))
         ]
 
         base_style = """
@@ -346,7 +354,7 @@ class PNGTuberApp(QMainWindow):
 
         self.btn_ai = QPushButton("🤖")
         self.btn_ai.setFixedSize(36, 36)
-        self.btn_ai.setToolTip("Modo Automático")
+        self.btn_ai.setToolTip(tr("tooltip.ai_mode"))
         self.btn_ai.setStyleSheet(base_style)
         self.btn_ai.clicked.connect(lambda: self.handle_hotkey("ai_mode"))
         self.emotions_layout.addWidget(self.btn_ai)
@@ -363,7 +371,7 @@ class PNGTuberApp(QMainWindow):
                 self.emotions_layout.addWidget(btn)
             else:
                 btn.setEnabled(False)
-                btn.setToolTip(f"{name} (No disponible)")
+                btn.setToolTip(tr("tooltip.emotion_unavailable", name=name))
                 btn.setStyleSheet(disabled_style)
                 btn.setVisible(False)
                 self.emotions_layout.addWidget(btn)
@@ -372,7 +380,7 @@ class PNGTuberApp(QMainWindow):
         if hasattr(self, 'expand_btn'):
             self.expand_btn.setVisible(len(self.extra_emotion_btns) > 0)
             self.expand_btn.setText("›")
-            self.expand_btn.setToolTip("Ver emociones no disponibles")
+            self.expand_btn.setToolTip(tr("tooltip.more_emotions"))
 
     def toggle_flip(self):
         self.is_flipped = not self.is_flipped
@@ -393,12 +401,12 @@ class PNGTuberApp(QMainWindow):
         
         if should_show:
             self.expand_btn.setText("‹")
-            self.expand_btn.setToolTip("Menos emociones")
-            if current_width < 600: 
+            self.expand_btn.setToolTip(tr("tooltip.less_emotions"))
+            if current_width < 600:
                 target_width = 600
         else:
             self.expand_btn.setText("›")
-            self.expand_btn.setToolTip("Ver más emociones")
+            self.expand_btn.setToolTip(tr("tooltip.more_emotions"))
             if current_width > 500:
                 target_width = 500
         
@@ -494,12 +502,13 @@ class PNGTuberApp(QMainWindow):
                 level = min(100, max(0, level))
                 
                 self.volume_bar.setValue(level)
-                
-                new_color = "#00E64D" 
-                if level > 80: new_color = "#FF3333" 
-                elif level > 60: new_color = "#FF8800" 
-                elif level > 40: new_color = "#FFFF00" 
-                
+
+                ok, mid, high, danger = theme_manager.level_colors()
+                new_color = ok
+                if level > 80: new_color = danger
+                elif level > 60: new_color = high
+                elif level > 40: new_color = mid
+
                 if new_color != self.last_color_hex:
                     self.volume_bar.set_color_hex(new_color)
                     self.last_color_hex = new_color
@@ -633,11 +642,11 @@ class PNGTuberApp(QMainWindow):
             self.download_dialog.close()
         
         if success:
-            QMessageBox.information(self, "Descarga Completada", "Modelo listo.") 
+            QMessageBox.information(self, tr("download.complete_title"), tr("download.complete_msg"))
             self.config_manager.set("ai_model", model_key)
             self.start_emotion_system(model_key)
         else:
-            QMessageBox.critical(self, "Error Fatal", f"No se pudo descargar el modelo.\nError: {msg}")
+            QMessageBox.critical(self, tr("download.error_title"), tr("download.error_msg", error=msg))
 
     def set_audio_threshold(self, value):
         self.audio_threshold = value
@@ -647,6 +656,7 @@ class PNGTuberApp(QMainWindow):
     def set_muted(self, muted):
         self.is_muted = muted
         self.mute_btn.setChecked(muted)
+        self.mute_btn.setText("🔇" if muted else "🔊")
         self.config_manager.set("is_muted", muted)
         if muted:
             self.is_speaking = False
@@ -667,6 +677,22 @@ class PNGTuberApp(QMainWindow):
         self.bounce_speed = value
         self.config_manager.set("bounce_speed", value)
 
+    def base_window_flags(self):
+        flags = Qt.WindowType.FramelessWindowHint
+        if self.always_on_top:
+            flags |= Qt.WindowType.WindowStaysOnTopHint
+        return flags
+
+    def set_always_on_top(self, enabled):
+        self.always_on_top = enabled
+        self.config_manager.set("always_on_top", enabled)
+
+        was_visible = self.isVisible()
+        self.setWindowFlags(self.base_window_flags())
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        if was_visible:
+            self.show()
+
     def set_shadow_enabled(self, enabled):
         self.shadow_enabled = enabled
         self.config_manager.set("shadow_enabled", enabled)
@@ -683,8 +709,11 @@ class PNGTuberApp(QMainWindow):
         rect = self.rect()
         self.sizegrip.move(rect.right() - self.sizegrip.width(), rect.bottom() - self.sizegrip.height())
         self.update_avatar()
-        if hasattr(self, 'tutorial') and self.tutorial and self.tutorial.isVisible():
-             self.tutorial.setGeometry(rect)
+        try:
+            if hasattr(self, 'tutorial') and self.tutorial and self.tutorial.isVisible():
+                self.tutorial.setGeometry(rect)
+        except RuntimeError:
+            self.tutorial = None
         super().resizeEvent(event)
 
     def contextMenuEvent(self, event):
@@ -702,8 +731,8 @@ class PNGTuberApp(QMainWindow):
         elif self.tray_icon.isVisible():
             tutorial_done = self.config_manager.get("tutorial_completed", False)
             if not tutorial_done and not self.tray_message_shown:
-                QMessageBox.information(self, "(AI)terEgo", 
-                                        "La aplicación seguirá ejecutándose en la bandeja del sistema.")
+                QMessageBox.information(self, "(AI)terEgo",
+                                        tr("app.tray_info_msg"))
                 self.tray_message_shown = True
             self.hide()
             event.ignore()
@@ -736,9 +765,9 @@ class PNGTuberApp(QMainWindow):
 
     def show_update_dialog(self, url):
         msg = QMessageBox(self)
-        msg.setWindowTitle("Actualización Disponible")
-        msg.setText("¡Hay una nueva versión de PNGTuber disponible!")
-        msg.setInformativeText("¿Deseas descargarla ahora?")
+        msg.setWindowTitle(tr("update.tray_title"))
+        msg.setText(tr("update.dialog_text"))
+        msg.setInformativeText(tr("update.dialog_info"))
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setDefaultButton(QMessageBox.StandardButton.Yes)
         
@@ -773,32 +802,32 @@ class PNGTuberApp(QMainWindow):
         self.tray_icon.setIcon(QIcon(icon_path))
         
         tray_menu = QMenu()
-        
-        show_action = QAction("Mostrar / Ocultar", self)
-        show_action.triggered.connect(self.toggle_window_visibility)
-        tray_menu.addAction(show_action)
-        
-        tray_menu.addSeparator()
-        
-        mute_action = QAction("Silenciar Micrófono", self)
-        mute_action.setCheckable(True)
-        mute_action.setChecked(self.is_muted)
-        mute_action.triggered.connect(lambda c: self.set_muted(c))
-        self.mute_btn.clicked.connect(lambda: mute_action.setChecked(self.is_muted))
-        tray_menu.addAction(mute_action)
 
-        ai_action = QAction("Modo IA activado", self)
-        ai_action.setCheckable(True)
-        ai_action.setChecked(self.ai_mode)
-        ai_action.triggered.connect(self.toggle_ai_mode_tray)
-        tray_menu.addAction(ai_action)
+        self.tray_show_action = QAction(tr("tray.toggle_visibility"), self)
+        self.tray_show_action.triggered.connect(self.toggle_window_visibility)
+        tray_menu.addAction(self.tray_show_action)
 
         tray_menu.addSeparator()
-        
-        quit_action = QAction("Salir (Quit)", self)
-        quit_action.triggered.connect(self.quit_application)
-        tray_menu.addAction(quit_action)
-        
+
+        self.tray_mute_action = QAction(tr("tray.mute_mic"), self)
+        self.tray_mute_action.setCheckable(True)
+        self.tray_mute_action.setChecked(self.is_muted)
+        self.tray_mute_action.triggered.connect(lambda c: self.set_muted(c))
+        self.mute_btn.clicked.connect(lambda: self.tray_mute_action.setChecked(self.is_muted))
+        tray_menu.addAction(self.tray_mute_action)
+
+        self.tray_ai_action = QAction(tr("tray.ai_mode"), self)
+        self.tray_ai_action.setCheckable(True)
+        self.tray_ai_action.setChecked(self.ai_mode)
+        self.tray_ai_action.triggered.connect(self.toggle_ai_mode_tray)
+        tray_menu.addAction(self.tray_ai_action)
+
+        tray_menu.addSeparator()
+
+        self.tray_quit_action = QAction(tr("tray.quit"), self)
+        self.tray_quit_action.triggered.connect(self.quit_application)
+        tray_menu.addAction(self.tray_quit_action)
+
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.activated.connect(self.on_tray_icon_activated)
         self.tray_icon.show()
@@ -820,33 +849,56 @@ class PNGTuberApp(QMainWindow):
         else:
              self.handle_hotkey("neutral")
 
+    def retranslate_ui(self, lang=None):
+        self.mute_btn.setToolTip(tr("tooltip.mute"))
+        self.flip_btn.setToolTip(tr("tooltip.flip"))
+        self.settings_btn.setToolTip(tr("tooltip.settings"))
+        self.update_dock_buttons()
+
+        if hasattr(self, 'pending_update_version'):
+            self.update_btn.setText(tr("update.badge_found", version=self.pending_update_version))
+        else:
+            self.update_btn.setText(tr("update.badge_default"))
+
+        if hasattr(self, 'tray_show_action'):
+            self.tray_show_action.setText(tr("tray.toggle_visibility"))
+            self.tray_mute_action.setText(tr("tray.mute_mic"))
+            self.tray_ai_action.setText(tr("tray.ai_mode"))
+            self.tray_quit_action.setText(tr("tray.quit"))
+
     def on_update_found(self, url, version):
         self.pending_update_url = url
-        self.update_btn.setText(f"⬇️  Actualización v{version} Disponible")
+        self.pending_update_version = version
+        self.update_btn.setText(tr("update.badge_found", version=version))
         self.update_btn.setVisible(True)
         print(f"Update detected: {version}")
-        
+
         if self.tray_icon.isVisible():
             self.tray_icon.showMessage(
-                "Actualización Disponible",
-                f"La versión {version} está lista para descargar.",
+                tr("update.tray_title"),
+                tr("update.tray_msg", version=version),
                 QSystemTrayIcon.MessageIcon.Information,
                 3000
             )
 
     def confirm_update(self):
         msg = QMessageBox(self)
-        msg.setWindowTitle("Actualización Disponible")
-        msg.setText("¡Nueva versión disponible!")
-        msg.setInformativeText("¿Quieres ir a la página de descarga ahora?")
+        msg.setWindowTitle(tr("update.tray_title"))
+        msg.setText(tr("update.dialog_text"))
+        msg.setInformativeText(tr("update.dialog_info"))
         msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg.setDefaultButton(QMessageBox.StandardButton.Yes)
-        
+
         if msg.exec() == QMessageBox.StandardButton.Yes:
             if hasattr(self, 'pending_update_url'):
                 QDesktopServices.openUrl(QUrl(self.pending_update_url))
 
 def print_signature():
+    if getattr(sys, 'frozen', False):
+        import datetime
+        print(f"=== (AI)terEgo v1.1.0 iniciado {datetime.datetime.now().isoformat(timespec='seconds')} ===")
+        return
+
     signature = """
     ╔══════════════════════════════════════════════════════════════════════╗
     ║                                                                      ║
@@ -857,7 +909,7 @@ def print_signature():
     ║ ╚█████╔╝╚█████╔╝ ██║  ██║██║  ██║╚██████╔╝███████╗███████╗           ║
     ║  ╚════╝  ╚════╝  ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝           ║
     ║                                                                      ║
-    ║   (AI)terEgo v1.0.0 - "Dando vida a los píxeles."                    ║
+    ║   (AI)terEgo v1.1.0 - "Dando vida a los píxeles."                    ║
     ║   GitHub: github.com/JJaroll                                         ║
     ║                                                                      ║
     ╚══════════════════════════════════════════════════════════════════════╝
@@ -869,12 +921,26 @@ def print_signature():
         pass
 
 def setup_app_environment():
-    
+
     if getattr(sys, 'frozen', False):
-        # encoding='utf-8' para que Windows no crashee con los prints especiales
-        sys.stdout = open(os.devnull, 'w', encoding='utf-8')
-        sys.stderr = open(os.devnull, 'w', encoding='utf-8')
-        
+        if sys.platform == "darwin":
+            log_dir = os.path.join(os.path.expanduser("~"), "Library", "Logs", "AIterEgo")
+        elif os.name == "nt":
+            log_dir = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "AIterEgo", "Logs")
+        else:
+            log_dir = os.path.join(os.path.expanduser("~"), ".local", "share", "AIterEgo", "logs")
+
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+            log_path = os.path.join(log_dir, "aiterego.log")
+            log_file = open(log_path, "a", encoding="utf-8", buffering=1)
+            sys.stdout = log_file
+            sys.stderr = log_file
+        except Exception:
+            # Si ni siquiera se puede abrir el log, no bloqueamos el arranque.
+            sys.stdout = open(os.devnull, 'w', encoding='utf-8')
+            sys.stderr = open(os.devnull, 'w', encoding='utf-8')
+
         current_dir = os.path.dirname(sys.executable)
         os.chdir(current_dir)
 

@@ -1,0 +1,136 @@
+name: Build AIterEgo Installers
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PortAudio (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y libportaudio2 portaudio19-dev
+          else
+            brew install portaudio
+          fi
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            SEP=";"
+            ICON="assets/app_icon.ico"
+          else
+            SEP=":"
+            ICON="assets/app_icon.icns"
+          fi
+          
+          EXTRA_ARGS=()
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            # Sin esto PyInstaller deja CFBundleIdentifier="AIterEgo" (no es
+            # un reverse-DNS válido). TCC guarda los permisos de privacidad
+            # (micrófono incluido) por bundle id, así que un id no estándar
+            # es una variable de más a la hora de que macOS reconozca el
+            # permiso de forma consistente entre builds.
+            EXTRA_ARGS+=(--osx-bundle-identifier "com.jjaroll.aiterego")
+          fi
+
+          pyinstaller --noconfirm --onedir --windowed --name "AIterEgo" \
+            --add-data "assets${SEP}assets" \
+            --add-data "avatars${SEP}avatars" \
+            --icon "$ICON" \
+            --collect-all transformers \
+            --hidden-import numpy \
+            --hidden-import pyaudio \
+            "${EXTRA_ARGS[@]}" \
+            main.py
+
+      # --- BLOQUE MAC: FIRMA Y DMG ---
+      - name: Sign and Create DMG
+        if: matrix.os == 'macos-latest'
+        run: |
+          plutil -insert NSMicrophoneUsageDescription -string "AIterEgo necesita acceso al micrófono para interactuar contigo mediante voz." "dist/AIterEgo.app/Contents/Info.plist"
+          
+          codesign --force --deep --sign - --entitlements entitlements.plist "dist/AIterEgo.app"
+          
+          brew install create-dmg
+          create-dmg \
+            --volname "AIterEgo Installer" \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 400 200 \
+            --icon "AIterEgo.app" 200 200 \
+            "AIterEgo_Installer.dmg" \
+            "dist/AIterEgo.app"
+
+      # --- BLOQUE WINDOWS: SETUP.EXE ---
+      - name: Create Windows Setup
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: |
+          choco install innosetup -y
+          Set-Location -Path $env:GITHUB_WORKSPACE
+          if (-not (Test-Path "installer.iss")) {
+            Write-Error "installer.iss NO encontrado en $PWD"
+            exit 1
+          }
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer.iss"
+
+      # --- BLOQUE LINUX: APPIMAGE ---
+      - name: Create Linux AppImage
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          mkdir -p AIterEgo.AppDir/usr/bin
+          cp -r dist/AIterEgo/* AIterEgo.AppDir/usr/bin/
+          cp assets/IA.png AIterEgo.AppDir/IA.png
+          ln -s usr/bin/AIterEgo AIterEgo.AppDir/AppRun
+          printf '%s\n' \
+            "[Desktop Entry]" \
+            "Type=Application" \
+            "Name=AIterEgo" \
+            "Exec=AIterEgo" \
+            "Icon=IA" \
+            "Categories=Utility;" > AIterEgo.AppDir/AIterEgo.desktop
+          ./appimagetool-x86_64.AppImage --appimage-extract-and-run AIterEgo.AppDir AIterEgo-Linux.AppImage
+
+      # --- UPLOADS CONDICIONALES ---
+      - name: Upload DMG
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with: { name: AIterEgo-macOS, path: AIterEgo_Installer.dmg }
+
+      - name: Upload Setup
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with: { name: AIterEgo-Windows, path: Output/setup.exe }
+
+      - name: Upload AppImage
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with: { name: AIterEgo-Linux, path: AIterEgo-Linux.AppImage }
+ # --- FIN ---

@@ -10,7 +10,7 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
@@ -18,71 +18,73 @@ import os
 import shutil
 import zipfile
 import json
-from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
+from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                              QLineEdit, QPushButton, QFileDialog, QMessageBox, QGridLayout, QScrollArea, QWidget)
 from PyQt6.QtCore import Qt
+
+from i18n import tr
 
 class ProfileCreatorDialog(QDialog):
     def __init__(self, parent=None, avatars_dir="avatars", edit_profile_name=None):
         super().__init__(parent)
         self.edit_mode = edit_profile_name is not None
         self.edit_profile_name = edit_profile_name
-        
-        title = f"Editar Skin: {edit_profile_name}" if self.edit_mode else "Crear Nuevo Skin de Avatar"
+
+        title = tr("creator.edit_title", name=edit_profile_name) if self.edit_mode else tr("creator.create_title")
         self.setWindowTitle(title)
         self.resize(500, 600)
         self.avatars_dir = avatars_dir
-        self.selected_files = {} 
+        self.selected_files = {}
 
         self.layout = QVBoxLayout(self)
 
         # Sección 1: Nombre
-        self.layout.addWidget(QLabel("Nombre del Skin:"))
+        self.layout.addWidget(QLabel(tr("creator.name_label")))
         self.name_input = QLineEdit()
-        
+
         if self.edit_mode:
             self.name_input.setText(edit_profile_name)
             self.name_input.setReadOnly(True)
             self.name_input.setStyleSheet("background-color: #333; color: #888;")
         else:
-            self.name_input.setPlaceholderText("Escribe el nombre aquí...")
-            
+            self.name_input.setPlaceholderText(tr("creator.name_placeholder"))
+
         self.layout.addWidget(self.name_input)
 
         self.layout.addSpacing(10)
-        self.layout.addWidget(QLabel("Asigna las imágenes correspondientes:"))
+        self.layout.addWidget(QLabel(tr("creator.assign_images")))
 
         # Sección 2: Grid
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         content = QWidget()
         self.grid = QGridLayout(content)
-        
+
         self.slots = [
-            ("Neutral - Cerrada", "neutral_closed"),
-            ("Neutral - Abierta", "neutral_open"),
-            ("Feliz - Cerrada", "happy_closed"),
-            ("Feliz - Abierta", "happy_open"),
-            ("Enojado - Cerrada", "angry_closed"),
-            ("Enojado - Abierta", "angry_open"),
-            ("Triste - Cerrada", "sad_closed"),
-            ("Triste - Abierta", "sad_open"),
-            ("Sorpresa - Cerrada", "surprise_closed"),
-            ("Sorpresa - Abierta", "surprise_open"),
-            ("Asco - Cerrada", "disgust_closed"),
-            ("Asco - Abierta", "disgust_open"),
-            ("Miedo - Cerrada", "fear_closed"),
-            ("Miedo - Abierta", "fear_open"),
+            (f"{tr('emotion.neutral')} - {tr('state.closed')}", "neutral_closed"),
+            (f"{tr('emotion.neutral')} - {tr('state.open')}", "neutral_open"),
+            (f"{tr('emotion.happy')} - {tr('state.closed')}", "happy_closed"),
+            (f"{tr('emotion.happy')} - {tr('state.open')}", "happy_open"),
+            (f"{tr('emotion.angry')} - {tr('state.closed')}", "angry_closed"),
+            (f"{tr('emotion.angry')} - {tr('state.open')}", "angry_open"),
+            (f"{tr('emotion.sad')} - {tr('state.closed')}", "sad_closed"),
+            (f"{tr('emotion.sad')} - {tr('state.open')}", "sad_open"),
+            (f"{tr('emotion.surprise')} - {tr('state.closed')}", "surprise_closed"),
+            (f"{tr('emotion.surprise')} - {tr('state.open')}", "surprise_open"),
+            (f"{tr('emotion.disgust')} - {tr('state.closed')}", "disgust_closed"),
+            (f"{tr('emotion.disgust')} - {tr('state.open')}", "disgust_open"),
+            (f"{tr('emotion.fear')} - {tr('state.closed')}", "fear_closed"),
+            (f"{tr('emotion.fear')} - {tr('state.open')}", "fear_open"),
         ]
 
         self.labels = {}
         for i, (text, key) in enumerate(self.slots):
             self.grid.addWidget(QLabel(text), i, 0)
-            lbl_status = QLabel("❌ Sin imagen")
+            lbl_status = QLabel(tr("creator.no_image"))
             lbl_status.setStyleSheet("color: gray; font-style: italic;")
             self.labels[key] = lbl_status
             self.grid.addWidget(lbl_status, i, 1)
-            btn = QPushButton("📂 Seleccionar")
+            btn = QPushButton(tr("creator.select_btn"))
             btn.clicked.connect(lambda _, k=key: self.select_image(k))
             self.grid.addWidget(btn, i, 2)
 
@@ -95,14 +97,14 @@ class ProfileCreatorDialog(QDialog):
 
         # Sección 3: Botones
         btns = QHBoxLayout()
-        cancel_btn = QPushButton("Cancelar")
+        cancel_btn = QPushButton(tr("common.cancel"))
         cancel_btn.clicked.connect(self.reject)
-        
-        btn_text = "💾 Guardar Cambios" if self.edit_mode else "💾 Guardar y Crear"
+
+        btn_text = tr("creator.save_changes") if self.edit_mode else tr("creator.save_create")
         save_btn = QPushButton(btn_text)
         save_btn.setStyleSheet("background-color: #28C840; color: white; font-weight: bold; padding: 6px;")
         save_btn.clicked.connect(self.save_profile)
-        
+
         btns.addWidget(cancel_btn)
         btns.addWidget(save_btn)
         self.layout.addLayout(btns)
@@ -114,16 +116,16 @@ class ProfileCreatorDialog(QDialog):
         for _, key in self.slots:
             img_path = os.path.join(profile_path, f"{key}.PNG")
             if os.path.exists(img_path):
-                self.selected_files[key] = img_path 
-                self.labels[key].setText("✅ Actual")
+                self.selected_files[key] = img_path
+                self.labels[key].setText(tr("creator.current_image"))
                 self.labels[key].setStyleSheet("color: #00E64D; font-weight: bold;")
 
     def select_image(self, key):
-        path, _ = QFileDialog.getOpenFileName(self, "Seleccionar PNG", "", "Imágenes PNG (*.png *.PNG)")
+        path, _ = QFileDialog.getOpenFileName(self, tr("creator.select_png_title"), "", tr("creator.png_filter"))
         if path:
             self.selected_files[key] = path
             filename = os.path.basename(path)
-            self.labels[key].setText(f"✅ Nuevo: {filename}")
+            self.labels[key].setText(tr("creator.new_image", filename=filename))
             self.labels[key].setStyleSheet("color: #00E64D; font-weight: bold;")
 
     def save_profile(self):
@@ -132,45 +134,45 @@ class ProfileCreatorDialog(QDialog):
             current_skins = [d for d in os.listdir(self.avatars_dir) if os.path.isdir(os.path.join(self.avatars_dir, d))]
             user_skins = [p for p in current_skins if p != "Default"]
             if len(user_skins) >= 12:
-                QMessageBox.warning(self, "Límite Alcanzado", "Has alcanzado el límite de 12 skins. Borra alguno manualmente antes de crear uno nuevo.")
+                QMessageBox.warning(self, tr("creator.limit_title"), tr("creator.limit_msg"))
                 return
 
         name = self.name_input.text().strip()
         if not name:
-            return QMessageBox.warning(self, "Error", "Por favor escribe un nombre para el skin.")
-        
+            return QMessageBox.warning(self, tr("common.error"), tr("creator.name_required"))
+
         target_dir = os.path.join(self.avatars_dir, name)
-        
+
         if not self.edit_mode and os.path.exists(target_dir):
-            return QMessageBox.warning(self, "Error", "Ya existe un skin con ese nombre.")
+            return QMessageBox.warning(self, tr("common.error"), tr("creator.name_exists"))
 
         has_neutral = ("neutral_closed" in self.selected_files and "neutral_open" in self.selected_files)
-        
+
         if not has_neutral:
-             return QMessageBox.warning(self, "Incompleto", "Debes tener al menos las imágenes 'Neutral' (Abierta y Cerrada).")
+             return QMessageBox.warning(self, tr("creator.incomplete_title"), tr("creator.incomplete_msg"))
 
         try:
             if not os.path.exists(target_dir):
                 os.makedirs(target_dir)
-            
+
             # Copiar imágenes
             for _, key in self.slots:
                 if key in self.selected_files:
                     src = self.selected_files[key]
                     dst = os.path.join(target_dir, f"{key}.PNG")
-                    
+
                     # Evitar copiarse a sí mismo si no ha cambiado
                     if os.path.abspath(src) != os.path.abspath(dst):
                          shutil.copy2(src, dst)
-            
-            msg = "Skin actualizado correctamente." if self.edit_mode else f"Skin '{name}' creado correctamente."
-            QMessageBox.information(self, "Éxito", msg)
-            
+
+            msg = tr("creator.update_success") if self.edit_mode else tr("creator.create_success", name=name)
+            QMessageBox.information(self, tr("common.success"), msg)
+
             # Solo preguntar exportar si es nuevo
             if not self.edit_mode:
                 reply = QMessageBox.question(
-                    self, "Exportar Skin", 
-                    "¿Deseas guardar un archivo .ptuber para compartir este skin?",
+                    self, tr("creator.export_prompt_title"),
+                    tr("creator.export_prompt_msg"),
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
                 )
 
@@ -179,11 +181,11 @@ class ProfileCreatorDialog(QDialog):
 
             self.accept()
         except Exception as e:
-            QMessageBox.critical(self, "Error Fatal", f"No se pudo guardar el perfil:\n{e}")
+            QMessageBox.critical(self, tr("download.error_title"), tr("creator.save_fatal_error", error=e))
 
     def export_ptuber(self, name, source_dir):
         save_path, _ = QFileDialog.getSaveFileName(
-            self, "Guardar Skin Compacto", f"{name}.ptuber", "PNGTuber Profile (*.ptuber)"
+            self, tr("creator.save_compact_title"), f"{name}.ptuber", tr("skin.filter")
         )
         if not save_path: return
 
@@ -198,9 +200,9 @@ class ProfileCreatorDialog(QDialog):
                 for filename in os.listdir(source_dir):
                     if filename.endswith(".PNG") or filename.endswith(".png"):
                         zipf.write(os.path.join(source_dir, filename), filename)
-            
+
             os.remove(meta_path)
-            QMessageBox.information(self, "Exportado", f"Archivo guardado en:\n{save_path}")
+            QMessageBox.information(self, tr("creator.exported_title"), tr("creator.exported_msg", path=save_path))
 
         except Exception as e:
-            QMessageBox.critical(self, "Error Exportación", f"Falló al crear el archivo .ptuber:\n{e}")
+            QMessageBox.critical(self, tr("creator.export_error_title"), tr("creator.export_fatal_error", error=e))

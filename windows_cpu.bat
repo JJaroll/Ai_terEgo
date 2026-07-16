@@ -1,22 +1,22 @@
 @echo off
-chcp 65001 > nul
+chcp 437 > nul
 title AIterEgo - Compilador CPU (Universal)
 color 0A
 
 echo.
-echo โ•”โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•—
-echo โ•‘                                                                      โ•‘
-echo โ•‘      โ–โ–โ•—     โ–โ–โ•—  โ–โ–โ–โ–โ–โ•— โ–โ–โ–โ–โ–โ–โ•—  โ–โ–โ–โ–โ–โ–โ•— โ–โ–โ•—     โ–โ–โ•—                โ•‘
-echo โ•‘      โ–โ–โ•‘     โ–โ–โ•‘ โ–โ–โ•”โ•โ•โ–โ–โ•—โ–โ–โ•”โ•โ•โ–โ–โ•—โ–โ–โ•”โ•โ•โ•โ–โ–โ•—โ–โ–โ•‘     โ–โ–โ•‘                โ•‘
-echo โ•‘      โ–โ–โ•‘     โ–โ–โ•‘ โ–โ–โ–โ–โ–โ–โ–โ•‘โ–โ–โ–โ–โ–โ–โ•”โ•โ–โ–โ•‘   โ–โ–โ•‘โ–โ–โ•‘     โ–โ–โ•‘                โ•‘
-echo โ•‘ โ–โ–โ•—  โ–โ–โ•‘โ–โ–โ•—  โ–โ–โ•‘ โ–โ–โ•”โ•โ•โ–โ–โ•‘โ–โ–โ•”โ•โ•โ–โ–โ•—โ–โ–โ•‘   โ–โ–โ•‘โ–โ–โ•‘     โ–โ–โ•‘                โ•‘
-echo โ•‘ โ•โ–โ–โ–โ–โ–โ•”โ•โ•โ–โ–โ–โ–โ–โ•”โ• โ–โ–โ•‘  โ–โ–โ•‘โ–โ–โ•‘  โ–โ–โ•‘โ•โ–โ–โ–โ–โ–โ–โ•”โ•โ–โ–โ–โ–โ–โ–โ–โ•—โ–โ–โ–โ–โ–โ–โ–โ•—           โ•‘
-echo โ•‘  โ•โ•โ•โ•โ•โ•  โ•โ•โ•โ•โ•โ•  โ•โ•โ•  โ•โ•โ•โ•โ•โ•  โ•โ•โ• โ•โ•โ•โ•โ•โ•โ• โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•           โ•‘
-echo โ•‘                                                                      โ•‘
-echo โ•‘   (AI)terEgo v1.0.0 - "Dando vida a los pรญxeles."                    โ•‘
-echo โ•‘   GitHub: github.com/JJaroll                                         โ•‘
-echo โ•‘                                                                      โ•‘
-echo โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•
+echo ษออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออป
+echo บ                                                                      บ
+echo บ      ÛÛป     ÛÛป  ÛÛÛÛÛป ÛÛÛÛÛÛป  ÛÛÛÛÛÛป ÛÛป     ÛÛป                บ
+echo บ      ÛÛบ     ÛÛบ ÛÛษออÛÛปÛÛษออÛÛปÛÛษอออÛÛปÛÛบ     ÛÛบ                บ
+echo บ      ÛÛบ     ÛÛบ ÛÛÛÛÛÛÛบÛÛÛÛÛÛษผÛÛบ   ÛÛบÛÛบ     ÛÛบ                บ
+echo บ ÛÛป  ÛÛบÛÛป  ÛÛบ ÛÛษออÛÛบÛÛษออÛÛปÛÛบ   ÛÛบÛÛบ     ÛÛบ                บ
+echo บ ศÛÛÛÛÛษผศÛÛÛÛÛษผ ÛÛบ  ÛÛบÛÛบ  ÛÛบศÛÛÛÛÛÛษผÛÛÛÛÛÛÛปÛÛÛÛÛÛÛป           บ
+echo บ  ศออออผ  ศออออผ  ศอผ  ศอผศอผ  ศอผ ศอออออผ ศออออออผศออออออผ           บ
+echo บ                                                                      บ
+echo บ   (AI)terEgo v1.1.0 - "Dando vida a los pกxeles."                    บ
+echo บ   GitHub: github.com/JJaroll                                         บ
+echo บ                                                                      บ
+echo ศออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ
 echo.
 
 echo ===================================================
@@ -40,7 +40,7 @@ echo Instalando dependencias del sistema...
 pip install "numpy<2" "transformers<4.40" pyaudio sounddevice librosa PyQt6 pyinstaller
 
 echo.
-echo [3/6] REPARACIร“N AUTOMรTICA DE รCONO (Multicapa)...
+echo [3/6] REPARACION AUTOMATICA DE ICONO (Multicapa)...
 python -c "from PIL import Image; img=Image.open('assets/IA.png'); img.save('assets/app_icon.ico', format='ICO', sizes=[(16,16), (32,32), (48,48), (64,64), (128,128), (256,256)])"
 
 echo.
@@ -53,14 +53,17 @@ echo.
 echo [5/6] Compilando con PyInstaller...
 pyinstaller --clean --noconfirm --onedir --windowed --name "AIterEgo_CPU" ^
     --add-data "assets;assets" ^
+    --add-data "avatars;avatars" ^
     --icon "assets/app_icon.ico" ^
+    --hidden-import numpy ^
     --hidden-import pyaudio ^
     --hidden-import sounddevice ^
+    --collect-all transformers ^
     main.py
 
 echo.
 echo [6/6] Comprimiendo la aplicacion en un archivo .zip para distribucion...
-powershell -command "Compress-Archive -Path 'dist\(AI)terEgo' -DestinationPath 'Ai_terego_Windows_CPU.zip' -Force"
+powershell -command "Compress-Archive -Path 'dist\AIterEgo_CPU' -DestinationPath 'Ai_terego_Windows_CPU.zip' -Force"
 
 echo.
 echo ========================================================

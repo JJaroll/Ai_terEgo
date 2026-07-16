@@ -10,12 +10,14 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QSizePolicy
 from PyQt6.QtCore import Qt, pyqtSignal
+
+from i18n import tr
 
 class MacWindowControls(QWidget):
     close_signal = pyqtSignal()
@@ -58,7 +60,7 @@ class MacWindowControls(QWidget):
         # --- Botón Cerrar (Rojo) ---
         # Símbolo: '×' (Multiplication Sign - Unicode U+00D7)
         self.btn_close = QPushButton("×")
-        self.btn_close.setToolTip("Cerrar")
+        self.btn_close.setToolTip(tr("mac.close"))
         # Combinamos el estilo base con el color específico
         self.btn_close.setStyleSheet(base_style + """
             QPushButton { background-color: #FF5F57; border: 1px solid #E0443E; }
@@ -70,7 +72,7 @@ class MacWindowControls(QWidget):
         # --- Botón Minimizar (Amarillo) ---
         # Símbolo: '−' (Minus Sign - Unicode U+2212)
         self.btn_minimize = QPushButton("−")
-        self.btn_minimize.setToolTip("Minimizar")
+        self.btn_minimize.setToolTip(tr("mac.minimize"))
         self.btn_minimize.setStyleSheet(base_style + """
             QPushButton { background-color: #FFBD2E; border: 1px solid #DEA123; }
             QPushButton:pressed { background-color: #BF9327; }
@@ -81,7 +83,7 @@ class MacWindowControls(QWidget):
         # --- Botón Maximizar/Zoom (Verde) ---
         # Símbolo: '+' (Plus Sign)
         self.btn_maximize = QPushButton("+")
-        self.btn_maximize.setToolTip("Zoom / Pantalla Completa")
+        self.btn_maximize.setToolTip(tr("mac.zoom"))
         self.btn_maximize.setStyleSheet(base_style + """
             QPushButton { background-color: #28C940; border: 1px solid #1AAB29; }
             QPushButton:pressed { background-color: #1F9A31; }
