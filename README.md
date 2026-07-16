@@ -8,6 +8,8 @@ Ideal para streamers, creadores de contenido o simplemente para divertirse en Di
 
 ## ✨ Características Principales
 
+* **🌍 Soporte Multi-Idioma:**
+    *   Interfaz disponible en Español e Inglés con soporte de internacionalización integrado (i18n).
 * **🧠 Cerebro IA Multi-Modelo:**
     *   **Español (SomosNLP):** Detecta *Neutral, Feliz, Triste, Enojado*.
     *   **Inglés/Global (XLS-R):** Detecta *Neutral, Feliz, Triste, Enojado, Sorpresa, Asco, Miedo*.
@@ -41,23 +43,17 @@ Ideal para streamers, creadores de contenido o simplemente para divertirse en Di
 ¡(AI)terEgo está disponible de forma nativa para todas las plataformas! Elige la versión correspondiente a tu sistema operativo para descargar la aplicación lista para usar (no requiere Python).
 
 ### 🍎 macOS
-* **Apple Silicon (M1 o superior):** [Descargar (AI)terEgo_Apple_Silicon.dmg](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.0.0/AI.terEgo_Apple_Silicon.dmg)
-* **Intel:** [Descargar (AI)terEgo_Intel.dmg](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.0.0/AI.terEgo_Intel.dmg)
+* **Instalador Universal (.dmg):** [Descargar AIterEgo_Installer.dmg](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/AIterEgo_Installer.dmg)
   > **Instalación:** Abre el archivo `.dmg` y arrastra la aplicación a tu carpeta de Aplicaciones. Al abrirla por primera vez, macOS te solicitará permisos para usar el micrófono; debes aceptarlos para que el avatar reaccione.
 
 ### 🪟 Windows
-* **Versión CPU (Ligera - Recomendada):** [Descargar (AI)terEgo_CPU_Win-x64.zip](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.0.0/AI.terEgo_CPU_Win-x64.zip)
+* **Instalador de Windows (.exe):** [Descargar setup.exe](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/setup.exe)
 * **Versión GPU (Nvidia CUDA):** [Descargar (AI)terEgo_GPU_Win-64.zip](https://drive.google.com/file/d/154DRv8xT6BG37Fc4wkSMSnRo75FLDeco/view?usp=sharing)
-  > **Instalación:** Descomprime el archivo `.zip` en una carpeta de tu preferencia y ejecuta el archivo `.exe`. No requiere instalación en el sistema.
+  > **Instalación:** Descarga y ejecuta el instalador `setup.exe` para instalar la aplicación en tu sistema de manera automática.
 
 ### 🐧 Linux
-* **Instalador Ubuntu/Debian (.deb):** [Descargar (AI)terEgo_Linux.deb](https://drive.google.com/file/d/1M58WQORh9opAXnKeB_XMSg9TbYqwVaKT/view?usp=sharing)
-  > **Instalación:** Ejecuta `sudo dpkg -i "(AI)terEgo_Linux.deb"` en tu terminal, o ábrelo con tu gestor de paquetes favorito (como GDebi).
-* **Portable Universal (.tar.gz):** [Descargar (AI)terEgo_Linux.tar.gz](https://drive.google.com/file/d/1gDADFmzQ2V3r7FkVYRP3aJ6KtWv8xVfJ/view?usp=sharing)
-  > **Instalación y Ejecución:** Esta versión no requiere instalación. Abre una terminal en la carpeta de descarga y ejecuta:
-  > 1. `tar -xzf "(AI)terEgo_Linux.tar.gz"`
-  > 2. `cd "(AI)terEgo"`
-  > 3. `./"(AI)terEgo"`
+* **Ejecutable Universal (.AppImage):** [Descargar AIterEgo-Linux.AppImage](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/AIterEgo-Linux.AppImage)
+  > **Instalación y Ejecución:** Descarga el archivo `.AppImage`. Haz clic derecho sobre él, ve a **Propiedades -> Permisos**, marca la opción "Permitir ejecutar el archivo como un programa" y luego simplemente haz doble clic para abrirlo.
 
 *Nota Importante: La primera vez que abras la aplicación en cualquier sistema, podría tardar unos segundos adicionales (o mostrar una pantalla de carga) mientras los modelos de Inteligencia Artificial se descargan o se inicializan en la memoria de tu equipo.*
 
