@@ -2,6 +2,8 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red) ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-1.1.0-blue)
 
+*🌍 **Español** | [English](README_en.md) | [日本語](README_ja.md)*
+
 **(AI)terEgo** es una aplicación de avatar virtual inteligente y moderna escrita en Python. A diferencia de los PNGTubers tradicionales que solo reaccionan al volumen, este proyecto utiliza **Inteligencia Artificial (Wav2Vec2)** para analizar tu tono de voz en tiempo real y cambiar la expresión de tu avatar automáticamente.
 
 Ideal para streamers, creadores de contenido o simplemente para divertirse en Discord/Zoom.
