@@ -22,53 +22,60 @@ jobs:
         shell: cmd
         run: |
           curl -L -o python-embed.zip https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip
-          choco install innosetup -y
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
-      # --- BLOQUE MAC: WEB INSTALLER (PKG Nativo) ---
-      - name: Create Mac PKG
+      # --- BLOQUE MAC: FIRMA Y DMG ---
+      - name: Sign and Create DMG
         if: matrix.os == 'macos-latest'
         run: |
-          mkdir -p root/Applications/AIterEgo.app/Contents/MacOS
-          mkdir -p root/Applications/AIterEgo.app/Contents/Resources
-          cp -r *.py assets avatars requirements.txt root/Applications/AIterEgo.app/Contents/Resources/
-          cp install_env.sh root/Applications/AIterEgo.app/Contents/MacOS/AIterEgo_Launcher
-          chmod +x root/Applications/AIterEgo.app/Contents/MacOS/AIterEgo_Launcher
-          cp assets/app_icon.icns root/Applications/AIterEgo.app/Contents/Resources/
+          plutil -insert NSMicrophoneUsageDescription -string "AIterEgo necesita acceso al micrófono para interactuar contigo mediante voz." "dist/AIterEgo.app/Contents/Info.plist"
           
-          # Script postinstall para ejecutar la descarga inicial
-          echo "#!/bin/bash" > postinstall.sh
-          echo "sh /Applications/AIterEgo.app/Contents/MacOS/AIterEgo_Launcher" >> postinstall.sh
-          chmod +x postinstall.sh
+          codesign --force --deep --sign - --entitlements entitlements.plist "dist/AIterEgo.app"
           
-          pkgbuild --root root --identifier "com.jjaroll.aiterego" --version "1.1.1" --install-location / --scripts . "AIterEgo_Installer.pkg"
-          codesign --force --sign - --deep "AIterEgo_Installer.pkg"
+          brew install create-dmg
+          create-dmg \
+            --volname "AIterEgo Installer" \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 400 200 \
+            --icon "AIterEgo.app" 200 200 \
+            "AIterEgo_Installer.dmg" \
+            "dist/AIterEgo.app"
 
-      # --- BLOQUE LINUX: WEB INSTALLER (.RUN) ---
-      - name: Create Linux Run Installer
+      # --- BLOQUE LINUX: APPIMAGE ---
+      - name: Create Linux AppImage
         if: matrix.os == 'ubuntu-latest'
         run: |
-          mkdir AIterEgo_Linux
-          cp -r *.py assets avatars requirements.txt install_env.sh AIterEgo_Linux/
-          chmod +x AIterEgo_Linux/install_env.sh
-          
-          sudo apt-get update
-          sudo apt-get install makeself -y
-          
-          makeself AIterEgo_Linux/ AIterEgo_Linux_WebInstaller.run "Instalador de AIterEgo" ./install_env.sh
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          mkdir -p AIterEgo.AppDir/usr/bin
+          cp -r dist/AIterEgo/* AIterEgo.AppDir/usr/bin/
+          cp assets/IA.png AIterEgo.AppDir/IA.png
+          ln -s usr/bin/AIterEgo AIterEgo.AppDir/AppRun
+          printf '%s\n' \
+            "[Desktop Entry]" \
+            "Type=Application" \
+            "Name=AIterEgo" \
+            "Exec=AIterEgo" \
+            "Icon=IA" \
+            "Categories=Utility;" > AIterEgo.AppDir/AIterEgo.desktop
+          ./appimagetool-x86_64.AppImage --appimage-extract-and-run AIterEgo.AppDir AIterEgo-Linux.AppImage
 
-      # --- SUBIDA DE ARTEFACTOS ---
+      # --- UPLOADS CONDICIONALES ---
+      - name: Upload DMG
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with: { name: AIterEgo-macOS, path: AIterEgo_Installer.dmg }
+
       - name: Upload Windows Setup
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
-        with: { name: AIterEgo-Windows, path: Output/AIterEgo_Windows_WebInstaller.exe }
+        with: 
+          name: AIterEgo-Windows
+          path: Output\AIterEgo_Windows_Installer.exe
 
-      - name: Upload Mac PKG
-        if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with: { name: AIterEgo-macOS, path: AIterEgo_Installer.pkg }
-
-      - name: Upload Linux Run
+      - name: Upload AppImage
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
-        with: { name: AIterEgo-Linux, path: AIterEgo_Linux_WebInstaller.run }
+        with: { name: AIterEgo-Linux, path: AIterEgo-Linux.AppImage }
+ # --- FIN ---

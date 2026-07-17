@@ -24,10 +24,9 @@ Source: "assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs
 Source: "avatars\*"; DestDir: "{app}\avatars"; Flags: ignoreversion recursesubdirs
 
 [Icons]
-; NOTA: Apuntamos al Python del venv creado por el .bat para asegurar que use las librerías instaladas
-Name: "{group}\AIterEgo"; Filename: "{app}\venv\Scripts\pythonw.exe"; Parameters: """{app}\main.py"""; IconFilename: "{app}\assets\app_icon.ico"
-Name: "{group}\Uninstall AIterEgo"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\AIterEgo"; Filename: "{app}\venv\Scripts\pythonw.exe"; Parameters: """{app}\main.py"""; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon
+; Lanzamos pythonw.exe directamente, pero usando un parámetro /C de cmd para el chequeo lógico
+Name: "{group}\AIterEgo"; Filename: "{cmd}"; Parameters: "/c if exist ""{app}\venv\Scripts\pythonw.exe"" (""{app}\venv\Scripts\pythonw.exe"" ""{app}\main.py"") else (call ""{app}\install_env.bat"" CPU)"; IconFilename: "{app}\assets\app_icon.ico"
+Name: "{autodesktop}\AIterEgo"; Filename: "{cmd}"; Parameters: "/c if exist ""{app}\venv\Scripts\pythonw.exe"" (""{app}\venv\Scripts\pythonw.exe"" ""{app}\main.py"") else (call ""{app}\install_env.bat"" CPU)"; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon
 
 [Run]
 ; Ejecutar el .bat dependiendo de la selección del usuario
