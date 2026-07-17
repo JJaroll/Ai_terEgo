@@ -32,9 +32,9 @@ Name: "{group}\AIterEgo"; Filename: "{cmd}"; Parameters: "/c if exist ""{app}\ve
 Name: "{autodesktop}\AIterEgo"; Filename: "{cmd}"; Parameters: "/c if exist ""{app}\venv\Scripts\pythonw.exe"" (""{app}\venv\Scripts\pythonw.exe"" ""{app}\main.py"") else (call ""{app}\install_env.bat"" CPU)"; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon
 
 [Run]
-; Ejecutar el .bat dependiendo de la selección del usuario
-Filename: "{app}\install_env.bat"; Parameters: "GPU"; Flags: postinstall runascurrentuser shellexec waituntilterminated; Description: "Instalar componentes IA (Modo GPU)"; Check: SelectHardwarePage.SelectedValueIndex = 0
-Filename: "{app}\install_env.bat"; Parameters: "CPU"; Flags: postinstall runascurrentuser shellexec waituntilterminated; Description: "Instalar componentes IA (Modo CPU)"; Check: SelectHardwarePage.SelectedValueIndex = 1
+; Usamos las funciones definidas en [Code]
+Filename: "{app}\install_env.bat"; Parameters: "GPU"; Flags: postinstall runascurrentuser shellexec waituntilterminated; Description: "Instalar componentes IA (Modo GPU)"; Check: IsGPUMode
+Filename: "{app}\install_env.bat"; Parameters: "CPU"; Flags: postinstall runascurrentuser shellexec waituntilterminated; Description: "Instalar componentes IA (Modo CPU)"; Check: IsCPUMode
 
 [Code]
 var
@@ -42,12 +42,22 @@ var
 
 procedure InitializeWizard;
 begin
-  // Página personalizada para elegir Hardware (se muestra después de elegir ruta)
   SelectHardwarePage := CreateInputOptionPage(wpSelectDir,
     'Aceleración de Hardware', 'Seleccione el motor de inferencia',
     'Por favor seleccione si desea utilizar la GPU (NVIDIA) o solamente la CPU para el análisis emocional.',
     True, False);
   SelectHardwarePage.Add('Modo GPU (NVIDIA RTX / GTX)');
   SelectHardwarePage.Add('Modo CPU (Máxima compatibilidad)');
-  SelectHardwarePage.SelectedValueIndex := 1; // CPU por defecto
+  SelectHardwarePage.SelectedValueIndex := 1;
+end;
+
+// Funciones auxiliares para la directiva Check
+function IsGPUMode: Boolean;
+begin
+  Result := (SelectHardwarePage.SelectedValueIndex = 0);
+end;
+
+function IsCPUMode: Boolean;
+begin
+  Result := (SelectHardwarePage.SelectedValueIndex = 1);
 end;
