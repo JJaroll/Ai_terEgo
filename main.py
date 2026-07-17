@@ -15,9 +15,15 @@ __maintainer__ = "JJaroll"
 __status__ = "Production"
 
 import sys
+import os
+import torch
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"✅ Sistema iniciado en modo: {device.upper()}")
+
 import multiprocessing
 import numpy as np
-import os
 import ctypes
 from PyQt6.QtWidgets import (QApplication, QLabel, QMainWindow, QVBoxLayout, 
                              QWidget, QHBoxLayout, QSizeGrip, QGraphicsDropShadowEffect, 

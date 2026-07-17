@@ -23,41 +23,47 @@ echo  Por favor, no cierres esta ventana.
 echo ===================================================
 
 cd /d "%~dp0"
+set MODE=%1
 
-:: 1. Descomprimir Python Portable si no existe
-if not exist "python\python.exe" (
-    echo [1/4] Extrayendo motor de Python...
-    powershell -command "Expand-Archive -Path 'python-embed.zip' -DestinationPath 'python' -Force"
-    
-    :: Habilitar 'import site' en el entorno portable
-    powershell -command "(Get-Content .\python\python312._pth) -replace '#import site', 'import site' | Set-Content .\python\python312._pth"
-    
-    echo [2/4] Instalando gestor de descargas...
-    curl -sSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    .\python\python.exe get-pip.py
-    del get-pip.py
+:: 1. Preparación de entorno
+.\python\python.exe -m venv venv 2>nul
+if not exist "venv\Scripts\python.exe" (
+    .\python\python.exe -m pip install virtualenv
+    .\python\python.exe -m virtualenv venv
 )
 
-:: 2. Detección de Hardware (GPU vs CPU)
-echo [3/4] Analizando hardware (Buscando GPU NVIDIA)...
-wmic path win32_VideoController get name | findstr /i "NVIDIA" >nul
-
-if %errorlevel%==0 (
-    echo [INFO] Tarjeta NVIDIA detectada. Descargando motor CUDA (Pesado - 2.5GB)...
-    .\python\python.exe -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-) else (
-    echo [INFO] No se detectó NVIDIA dedicada. Descargando motor CPU (Ligero - 150MB)...
-    .\python\python.exe -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+:: 2. Detección de hardware e instalación de PyTorch por partes
+echo [1/3] Instalando PyTorch (%MODE%) con timeout extendido...
+IF "%MODE%"=="GPU" (
+    set "TORCH_INDEX=https://download.pytorch.org/whl/cu121"
+) ELSE (
+    set "TORCH_INDEX=https://download.pytorch.org/whl/cpu"
 )
 
-:: 3. Instalar librerías de AIterEgo
-echo [4/4] Instalando dependencias del sistema...
-findstr /v /i "torch" requirements.txt > requirements_win.txt
-.\python\python.exe -m pip install -r requirements_win.txt
-del requirements_win.txt
+.\venv\Scripts\pip.exe install --default-timeout=600 torch --index-url %TORCH_INDEX%
+.\venv\Scripts\pip.exe install --default-timeout=600 torchvision --index-url %TORCH_INDEX%
+.\venv\Scripts\pip.exe install --default-timeout=600 torchaudio --index-url %TORCH_INDEX%
 
+:: 3. Instalación de dependencias del sistema excluyendo torch
+echo [2/3] Instalando dependencias del sistema...
+if exist "requirements.txt" (
+    findstr /v /i "torch" requirements.txt > requirements_win.txt
+    .\venv\Scripts\pip.exe install -r requirements_win.txt
+    del requirements_win.txt
+)
+
+:: 4. Parches de compatibilidad obligatorios (tokenizers + transformers 4.35)
+echo [3/3] Aplicando parches de compatibilidad...
+.\venv\Scripts\pip.exe install tokenizers==0.19.1 --only-binary=:all:
+.\venv\Scripts\pip.exe install transformers==4.35.0 --no-deps
+powershell -Command "(Get-Content 'venv\Lib\site-packages\transformers\dependency_versions_table.py') -replace '\"tokenizers\": \"tokenizers>=0.14,<0.15\"', '\"tokenizers\": \"tokenizers>=0.14,<=0.20\"' | Set-Content 'venv\Lib\site-packages\transformers\dependency_versions_table.py'"
+
+
+:: 5. Limpieza final
+echo [5/5] Limpieza final...
+del /s /q "%USERPROFILE%\.cache\huggingface\hub\*"
 echo ===================================================
 echo  ¡Instalación completada con éxito!
 echo  Ya puedes iniciar AIterEgo desde tu escritorio.
 echo ===================================================
-timeout /t 5
+pause

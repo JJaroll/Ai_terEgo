@@ -345,11 +345,14 @@ class EmotionThread(QThread):
         try:
             self.feat = Wav2Vec2FeatureExtractor.from_pretrained(model_id)
             if "ehcalabres" in model_id:
-                # Usamos nuestra clase personalizada
-                self.model = EhcalabresModel.from_pretrained(model_id).to(self.device)
+                # Carga y movimiento a GPU
+                self.model = EhcalabresModel.from_pretrained(model_id)
+                self.model = self.model.to(self.device) # <--- Asegura este movimiento
             else:
-                # Usamos la carga estándar para otros modelos
-                self.model = AutoModelForAudioClassification.from_pretrained(model_id).to(self.device)
+                # Carga y movimiento a GPU
+                self.model = AutoModelForAudioClassification.from_pretrained(model_id)
+                self.model = self.model.to(self.device) # <--- Asegura este movimiento
+            
             print("✅ Modelo IA cargado correctamente.")
         except Exception as e:
             print(f"❌ Error cargando modelo: {e}")
