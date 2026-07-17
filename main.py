@@ -18,6 +18,11 @@ import sys
 import os
 import torch
 
+import platform
+if platform.system() == "Windows":
+    os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+    os.environ["HF_HUB_DISABLE_SYMLINKS"] = "1"
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"✅ Sistema iniciado en modo: {device.upper()}")
