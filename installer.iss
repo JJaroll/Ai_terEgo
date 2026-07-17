@@ -16,10 +16,13 @@ PrivilegesRequired=lowest
 Name: "desktopicon"; Description: "Crear un acceso directo en el Escritorio"; GroupDescription: "Accesos directos adicionales:"
 
 [Files]
+; Archivos fuente y scripts de entorno
 Source: "*.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "requirements.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "install_env.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "python-embed.zip"; DestDir: "{app}"; Flags: ignoreversion
+
+; Assets y avatares con recursión para mantener la estructura de subcarpetas
 Source: "assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs
 Source: "avatars\*"; DestDir: "{app}\avatars"; Flags: ignoreversion recursesubdirs
 

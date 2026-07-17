@@ -22,7 +22,60 @@ jobs:
         shell: cmd
         run: |
           curl -L -o python-embed.zip https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip
+          choco install innosetup -y
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      # --- PREPARACIÓN PARA MAC Y LINUX ---
+      - name: Set up Python
+        if: matrix.os != 'windows-latest'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PortAudio (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y libportaudio2 portaudio19-dev
+          else
+            brew install portaudio
+          fi
+
+      - name: Install dependencies (Mac/Linux)
+        if: matrix.os != 'windows-latest'
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller (Mac/Linux)
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          EXTRA_ARGS=()
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            SEP=":"
+            ICON="assets/app_icon.icns"
+            EXTRA_ARGS+=(--osx-bundle-identifier "com.jjaroll.aiterego")
+          else
+            SEP=":"
+            ICON="assets/IA.png"
+          fi
+          
+          pyinstaller --noconfirm --onedir --windowed --name "AIterEgo" \
+            --add-data "assets${SEP}assets" \
+            --add-data "avatars${SEP}avatars" \
+            --icon "$ICON" \
+            --collect-all transformers \
+            --hidden-import numpy \
+            --hidden-import pyaudio \
+            "${EXTRA_ARGS[@]}" \
+            main.py
+            
+          # LISTAR ARCHIVOS PARA DEPURAR
+          echo "Contenido de dist:"
+          ls -R dist/
 
       # --- BLOQUE MAC: FIRMA Y DMG ---
       - name: Sign and Create DMG
@@ -46,10 +99,24 @@ jobs:
       - name: Create Linux AppImage
         if: matrix.os == 'ubuntu-latest'
         run: |
+          if [ ! -d "dist/AIterEgo" ]; then
+            echo "Error: La carpeta dist/AIterEgo no existe. Revisar log de PyInstaller."
+            ls -R dist/
+            exit 1
+          fi
+          
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
+          
           mkdir -p AIterEgo.AppDir/usr/bin
-          cp -r dist/AIterEgo/* AIterEgo.AppDir/usr/bin/
+          
+          # Prevenir estructura doble si PyInstaller anidó la carpeta
+          if [ -d "dist/AIterEgo/AIterEgo" ]; then
+            cp -r dist/AIterEgo/AIterEgo/* AIterEgo.AppDir/usr/bin/
+          else
+            cp -r dist/AIterEgo/* AIterEgo.AppDir/usr/bin/
+          fi
+          
           cp assets/IA.png AIterEgo.AppDir/IA.png
           ln -s usr/bin/AIterEgo AIterEgo.AppDir/AppRun
           printf '%s\n' \
@@ -59,6 +126,7 @@ jobs:
             "Exec=AIterEgo" \
             "Icon=IA" \
             "Categories=Utility;" > AIterEgo.AppDir/AIterEgo.desktop
+            
           ./appimagetool-x86_64.AppImage --appimage-extract-and-run AIterEgo.AppDir AIterEgo-Linux.AppImage
 
       # --- UPLOADS CONDICIONALES ---
@@ -72,7 +140,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with: 
           name: AIterEgo-Windows
-          path: Output\AIterEgo_Windows_Installer.exe
+          path: Output\AIterEgo_Windows_WebInstaller.exe
 
       - name: Upload AppImage
         if: matrix.os == 'ubuntu-latest'
