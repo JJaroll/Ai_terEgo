@@ -32,10 +32,8 @@ Name: "{group}\AIterEgo"; Filename: "{cmd}"; Parameters: "/c if exist ""{app}\ve
 Name: "{autodesktop}\AIterEgo"; Filename: "{cmd}"; Parameters: "/c if exist ""{app}\venv\Scripts\pythonw.exe"" (""{app}\venv\Scripts\pythonw.exe"" ""{app}\main.py"") else (call ""{app}\install_env.bat"" CPU)"; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon
 
 [Run]
-; Usamos las funciones definidas en [Code]
-Filename: "{app}\install_env.bat"; Parameters: "GPU"; Flags: postinstall runascurrentuser shellexec waituntilterminated; Description: "Instalar componentes IA (Modo GPU)"; Check: IsGPUMode
-Filename: "{app}\install_env.bat"; Parameters: "CPU"; Flags: postinstall runascurrentuser shellexec waituntilterminated; Description: "Instalar componentes IA (Modo CPU)"; Check: IsCPUMode
-
+Filename: "{app}\install_env.bat"; Parameters: "GPU"; WorkingDir: "{app}"; Flags: postinstall runascurrentuser waituntilterminated; Description: "Instalar componentes IA (Modo GPU)"; Check: IsGPUMode
+Filename: "{app}\install_env.bat"; Parameters: "CPU"; WorkingDir: "{app}"; Flags: postinstall runascurrentuser waituntilterminated; Description: "Instalar componentes IA (Modo CPU)"; Check: IsCPUMode
 [Code]
 var
   SelectHardwarePage: TInputOptionWizardPage;

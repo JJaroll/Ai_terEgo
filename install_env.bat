@@ -2,6 +2,7 @@
 :: Cambiar a codificación UTF-8 para que el ASCII y los acentos se rendericen bien
 chcp 65001 >nul
 title AIterEgo - Preparando Entorno de Inteligencia Artificial
+pushd "%~dp0"
 
 echo     ╔══════════════════════════════════════════════════════════════════════╗
 echo     ║                                                                      ║
