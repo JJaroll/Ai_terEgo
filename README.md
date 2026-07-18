@@ -45,17 +45,23 @@ Ideal para streamers, creadores de contenido o simplemente para divertirse en Di
 ¡(AI)terEgo está disponible de forma nativa para todas las plataformas! Elige la versión correspondiente a tu sistema operativo para descargar la aplicación lista para usar (no requiere Python).
 
 ### 🍎 macOS
-* **Instalador Universal (.dmg):** [Descargar AIterEgo_Installer.dmg](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AIterEgo_Installer.dmg)
+* **Instalador Universal (.dmg):** [Descargar AI.terEgo_Installer.dmg](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AI.terEgo_Installer.dmg)
   > **Instalación:** Abre el archivo `.dmg` y arrastra la aplicación a tu carpeta de Aplicaciones. Al abrirla por primera vez, macOS te solicitará permisos para usar el micrófono; debes aceptarlos para que el avatar reaccione.
 
 ### 🪟 Windows
-* **Instalador de Windows (.exe):** [Descargar setup.exe](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/setup.exe)
-* **Versión GPU (Nvidia CUDA):** [Descargar (AI)terEgo_GPU_Win-64.zip](https://drive.google.com/file/d/154DRv8xT6BG37Fc4wkSMSnRo75FLDeco/view?usp=sharing)
-  > **Instalación:** Descarga y ejecuta el instalador `setup.exe` para instalar la aplicación en tu sistema de manera automática.
+* **Instalador de Windows (.exe):** [Descargar AI.terEgo_Windows_WebInstaller.exe](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AI.terEgo_Windows_WebInstaller.exe)
+  > **Instalación:** El instalador te solicitará seleccionar la version deseada, GPU para gran performance con tarjetas Nvidia, o CPU para máxima compatibilidad.
 
 ### 🐧 Linux
-* **Ejecutable Universal (.AppImage):** [Descargar AIterEgo-Linux.AppImage](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AIterEgo-Linux.AppImage)
-  > **Instalación y Ejecución:** Descarga el archivo `.AppImage`. Haz clic derecho sobre él, ve a **Propiedades -> Permisos**, marca la opción "Permitir ejecutar el archivo como un programa" y luego simplemente haz doble clic para abrirlo.
+* **Ejecutable Universal (.AppImage):** 
+  [Descargar Parte A](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AI.terEgo-Linux.AppImage.partaa) | [Descargar Parte B](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AI.terEgo-Linux.AppImage.partab)
+
+  > **Instalación y Ejecución:** 
+  > 1. Descarga ambas partes (`.partaa` y `.partab`) y colócalas en la misma carpeta.
+  > 2. Abre una terminal en esa carpeta y une las partes con el siguiente comando:
+  >    `cat AIterEgo-Linux.AppImage.part* > "(AI)terEgo-Linux.AppImage"`
+  > 3. Haz clic derecho sobre el archivo resultante `(AI)terEgo-Linux.AppImage`, ve a **Propiedades -> Permisos**, marca la opción "Permitir ejecutar el archivo como un programa".
+  > 4. Finalmente, haz doble clic sobre el archivo para ejecutar la aplicación.
 
 *Nota Importante: La primera vez que abras la aplicación en cualquier sistema, podría tardar unos segundos adicionales (o mostrar una pantalla de carga) mientras los modelos de Inteligencia Artificial se descargan o se inicializan en la memoria de tu equipo.*
 

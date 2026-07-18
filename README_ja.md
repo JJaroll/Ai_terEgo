@@ -46,17 +46,23 @@
 (AI)terEgo はすべてのプラットフォームでネイティブに利用可能です！オペレーティングシステムに対応するバージョンを選択し、すぐに使えるアプリケーションをダウンロードしてください (Python は不要です)。
 
 ### 🍎 macOS
-* **ユニバーサルインストーラー (.dmg):** [AIterEgo_Installer.dmg をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AIterEgo_Installer.dmg)
+* **ユニバーサルインストーラー (.dmg):** [AI.terEgo_Installer.dmg をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AI.terEgo_Installer.dmg)
   > **インストール:** `.dmg` ファイルを開き、アプリケーションを「アプリケーション」フォルダにドラッグします。初めて開くとき、macOS はマイクの使用許可を求めます。アバターを反応させるには、これを許可する必要があります。
 
 ### 🪟 Windows
-* **Windows インストーラー (.exe):** [setup.exe をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/setup.exe)
-* **GPU バージョン (Nvidia CUDA):** [(AI)terEgo_GPU_Win-64.zip をダウンロード](https://drive.google.com/file/d/154DRv8xT6BG37Fc4wkSMSnRo75FLDeco/view?usp=sharing)
-  > **インストール:** `setup.exe` インストーラーをダウンロードして実行し、システムにアプリケーションを自動的にインストールします。
+* **Windows インストーラー (.exe):** [AI.terEgo_Windows_WebInstaller.exe をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AI.terEgo_Windows_WebInstaller.exe)
+  > **インストール:** インストーラーが希望するバージョン（Nvidia カードで高いパフォーマンスを発揮する GPU、または最大限の互換性を持つ CPU）を選択するよう求めます。
 
 ### 🐧 Linux
-* **ユニバーサル実行ファイル (.AppImage):** [AIterEgo-Linux.AppImage をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AIterEgo-Linux.AppImage)
-  > **インストールと実行:** `.AppImage` ファイルをダウンロードします。右クリックして **「プロパティ」 -> 「アクセス権」** に進み、「プログラムとして実行可能」オプションにチェックを入れ、ダブルクリックして開きます。
+* **ユニバーサル実行ファイル (.AppImage):** 
+  [パートAをダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AI.terEgo-Linux.AppImage.partaa) | [パートBをダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AI.terEgo-Linux.AppImage.partab)
+
+  > **インストールと実行:** 
+  > 1. 両方のパート（`.partaa` と `.partab`）をダウンロードし、同じフォルダに配置します。
+  > 2. そのフォルダでターミナルを開き、次のコマンドでパートを結合します：
+  >    `cat AIterEgo-Linux.AppImage.part* > "(AI)terEgo-Linux.AppImage"`
+  > 3. 生成された `(AI)terEgo-Linux.AppImage` ファイルを右クリックし、**「プロパティ」 -> 「アクセス権」** に進み、「プログラムとして実行可能」オプションにチェックを入れます。
+  > 4. 最後に、ファイルをダブルクリックしてアプリケーションを実行します。
 
 *重要な注意: どのシステムでも初めてアプリケーションを開く際、人工知能モデルがダウンロードされたり、デバイスのメモリに初期化されたりするため、数秒余分に時間がかかる (またはロード画面が表示される) ことがあります。*
 
