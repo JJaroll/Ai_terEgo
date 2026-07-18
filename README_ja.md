@@ -1,6 +1,6 @@
 # 🎙️ (AI)terEgo (Python + PyTorch)
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red) ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-1.1.0-blue)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red) ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-1.2.0-blue)
 
 
 *🌍 [Español](README.md) | [English](README_en.md) | **日本語***
@@ -46,16 +46,16 @@
 (AI)terEgo はすべてのプラットフォームでネイティブに利用可能です！オペレーティングシステムに対応するバージョンを選択し、すぐに使えるアプリケーションをダウンロードしてください (Python は不要です)。
 
 ### 🍎 macOS
-* **ユニバーサルインストーラー (.dmg):** [AIterEgo_Installer.dmg をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/AIterEgo_Installer.dmg)
+* **ユニバーサルインストーラー (.dmg):** [AIterEgo_Installer.dmg をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AIterEgo_Installer.dmg)
   > **インストール:** `.dmg` ファイルを開き、アプリケーションを「アプリケーション」フォルダにドラッグします。初めて開くとき、macOS はマイクの使用許可を求めます。アバターを反応させるには、これを許可する必要があります。
 
 ### 🪟 Windows
-* **Windows インストーラー (.exe):** [setup.exe をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/setup.exe)
+* **Windows インストーラー (.exe):** [setup.exe をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/setup.exe)
 * **GPU バージョン (Nvidia CUDA):** [(AI)terEgo_GPU_Win-64.zip をダウンロード](https://drive.google.com/file/d/154DRv8xT6BG37Fc4wkSMSnRo75FLDeco/view?usp=sharing)
   > **インストール:** `setup.exe` インストーラーをダウンロードして実行し、システムにアプリケーションを自動的にインストールします。
 
 ### 🐧 Linux
-* **ユニバーサル実行ファイル (.AppImage):** [AIterEgo-Linux.AppImage をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/AIterEgo-Linux.AppImage)
+* **ユニバーサル実行ファイル (.AppImage):** [AIterEgo-Linux.AppImage をダウンロード](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AIterEgo-Linux.AppImage)
   > **インストールと実行:** `.AppImage` ファイルをダウンロードします。右クリックして **「プロパティ」 -> 「アクセス権」** に進み、「プログラムとして実行可能」オプションにチェックを入れ、ダブルクリックして開きます。
 
 *重要な注意: どのシステムでも初めてアプリケーションを開く際、人工知能モデルがダウンロードされたり、デバイスのメモリに初期化されたりするため、数秒余分に時間がかかる (またはロード画面が表示される) ことがあります。*

@@ -1,6 +1,6 @@
 # 🎙️ (AI)terEgo (Python + PyTorch)
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red) ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-1.1.0-blue)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red) ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-1.2.0-blue)
 
 *🌍 [Español](README.md) | **English** | [日本語](README_ja.md)*
 
@@ -45,16 +45,16 @@ Ideal for streamers, content creators, or just having fun on Discord/Zoom.
 (AI)terEgo is available natively for all platforms! Choose the version corresponding to your operating system to download the ready-to-use application (no Python required).
 
 ### 🍎 macOS
-* **Universal Installer (.dmg):** [Download AIterEgo_Installer.dmg](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/AIterEgo_Installer.dmg)
+* **Universal Installer (.dmg):** [Download AIterEgo_Installer.dmg](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AIterEgo_Installer.dmg)
   > **Installation:** Open the `.dmg` file and drag the application to your Applications folder. When opening it for the first time, macOS will ask for permission to use the microphone; you must accept this for the avatar to react.
 
 ### 🪟 Windows
-* **Windows Installer (.exe):** [Download setup.exe](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/setup.exe)
+* **Windows Installer (.exe):** [Download setup.exe](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/setup.exe)
 * **GPU Version (Nvidia CUDA):** [Download (AI)terEgo_GPU_Win-64.zip](https://drive.google.com/file/d/154DRv8xT6BG37Fc4wkSMSnRo75FLDeco/view?usp=sharing)
   > **Installation:** Download and run the `setup.exe` installer to automatically install the application on your system.
 
 ### 🐧 Linux
-* **Universal Executable (.AppImage):** [Download AIterEgo-Linux.AppImage](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.1.0/AIterEgo-Linux.AppImage)
+* **Universal Executable (.AppImage):** [Download AIterEgo-Linux.AppImage](https://github.com/JJaroll/Ai_terEgo/releases/download/v1.2.0/AIterEgo-Linux.AppImage)
   > **Installation and Execution:** Download the `.AppImage` file. Right-click on it, go to **Properties -> Permissions**, check the "Allow executing file as program" option, and then simply double-click it to open.
 
 *Important Note: The first time you open the application on any system, it might take a few extra seconds (or show a loading screen) while the Artificial Intelligence models are downloaded or initialized in your device's memory.*

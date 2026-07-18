@@ -95,40 +95,13 @@ jobs:
             "AIterEgo_Installer.dmg" \
             "dist/AIterEgo.app"
 
-      # --- BLOQUE LINUX: APPIMAGE ---
-      - name: Create Linux AppImage
+      # --- BLOQUE LINUX: DOCKERIZED APPIMAGE ---
+      - name: Build Linux AppImage in Docker
         if: matrix.os == 'ubuntu-latest'
         run: |
-          if [ ! -d "dist/AIterEgo" ]; then
-            echo "Error: La carpeta dist/AIterEgo no existe. Revisar log de PyInstaller."
-            ls -R dist/
-            exit 1
-          fi
-          
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x appimagetool-x86_64.AppImage
-          
-          mkdir -p AIterEgo.AppDir/usr/bin
-          
-          # Prevenir estructura doble si PyInstaller anidó la carpeta
-          if [ -d "dist/AIterEgo/AIterEgo" ]; then
-            cp -r dist/AIterEgo/AIterEgo/* AIterEgo.AppDir/usr/bin/
-          else
-            cp -r dist/AIterEgo/* AIterEgo.AppDir/usr/bin/
-          fi
-          
-          cp assets/IA.png AIterEgo.AppDir/IA.png
-          ln -s usr/bin/AIterEgo AIterEgo.AppDir/AppRun
-          printf '%s\n' \
-            "[Desktop Entry]" \
-            "Type=Application" \
-            "Name=AIterEgo" \
-            "Exec=AIterEgo" \
-            "Icon=IA" \
-            "Categories=Utility;" > AIterEgo.AppDir/AIterEgo.desktop
-            
-          ./appimagetool-x86_64.AppImage --appimage-extract-and-run AIterEgo.AppDir AIterEgo-Linux.AppImage
-
+          docker build -t aiterego-builder .
+          docker run --rm -v $(pwd):/app aiterego-builder
+        
       # --- UPLOADS CONDICIONALES ---
       - name: Upload DMG
         if: matrix.os == 'macos-latest'

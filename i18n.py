@@ -5,7 +5,7 @@ Sistema de traducciones de la interfaz: Español, Inglés y Japonés.
 """
 
 __author__ = "JJaroll"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 

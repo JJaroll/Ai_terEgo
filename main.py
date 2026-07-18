@@ -10,7 +10,7 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
@@ -98,10 +98,14 @@ class PNGTuberApp(QMainWindow):
 
         # Audio e IA
         saved_mic = self.config.get("microphone_index")
-        self.audio_thread = AudioMonitorThread(device_index=saved_mic, threshold=self.audio_threshold, sensitivity=self.mic_sensitivity)
-        self.audio_thread.volume_signal.connect(self.update_mouth)
-        self.audio_thread.audio_data_signal.connect(self.handle_audio)
-        self.audio_thread.start()
+        try:
+            self.audio_thread = AudioMonitorThread(device_index=saved_mic, threshold=self.audio_threshold, sensitivity=self.mic_sensitivity)
+            self.audio_thread.volume_signal.connect(self.update_mouth)
+            self.audio_thread.audio_data_signal.connect(self.handle_audio)
+            self.audio_thread.start()
+        except Exception as e:
+            print(f"⚠️ Advertencia: No se pudo inicializar el audio (Modo WSL/Sin Micrófono): {e}")
+            self.audio_thread = None
 
         self.emotion_thread = None
         QTimer.singleShot(100, self.check_initial_model)
@@ -753,7 +757,8 @@ class PNGTuberApp(QMainWindow):
 
     def stop_threads(self):
         self.hotkey_manager.stop_listening()
-        self.audio_thread.stop()
+        if hasattr(self, 'audio_thread') and self.audio_thread:
+            self.audio_thread.stop()
         if self.emotion_thread:
             self.emotion_thread.stop()
         if self.update_checker: 
@@ -907,7 +912,7 @@ class PNGTuberApp(QMainWindow):
 def print_signature():
     if getattr(sys, 'frozen', False):
         import datetime
-        print(f"=== (AI)terEgo v1.1.0 iniciado {datetime.datetime.now().isoformat(timespec='seconds')} ===")
+        print(f"=== (AI)terEgo v1.2.0 iniciado {datetime.datetime.now().isoformat(timespec='seconds')} ===")
         return
 
     signature = """
@@ -920,7 +925,7 @@ def print_signature():
     ║ ╚█████╔╝╚█████╔╝ ██║  ██║██║  ██║╚██████╔╝███████╗███████╗           ║
     ║  ╚════╝  ╚════╝  ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝           ║
     ║                                                                      ║
-    ║   (AI)terEgo v1.1.0 - "Dando vida a los píxeles."                    ║
+    ║   (AI)terEgo v1.2.0 - "Dando vida a los píxeles."                    ║
     ║   GitHub: github.com/JJaroll                                         ║
     ║                                                                      ║
     ╚══════════════════════════════════════════════════════════════════════╝
@@ -956,46 +961,53 @@ def setup_app_environment():
         os.chdir(current_dir)
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
-    setup_app_environment()
-    print_signature() 
+    import traceback  # Importamos traceback aquí para rastrear el error exacto
     
-    if os.name == 'nt':
-        import ctypes
-        myappid = u'jjaroll.aiterego.avatar.v1' 
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-    
-    app = QApplication(sys.argv)
-    
-    if os.name == 'nt':
-        icon_path = resource_path("assets/app_icon.ico")
-    else:
-        icon_path = resource_path("assets/app_icon.icns")
-    
-    app_icon = QIcon(icon_path)
-    app.setWindowIcon(app_icon)
+    try:
+        multiprocessing.freeze_support()
+        setup_app_environment()
+        print_signature() 
+        
+        if os.name == 'nt':
+            import ctypes
+            myappid = u'jjaroll.aiterego.avatar.v1' 
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        
+        app = QApplication(sys.argv)
+        
+        if os.name == 'nt':
+            icon_path = resource_path("assets/app_icon.ico")
+        else:
+            icon_path = resource_path("assets/app_icon.icns")
+        
+        app_icon = QIcon(icon_path)
+        app.setWindowIcon(app_icon)
 
-    app.setQuitOnLastWindowClosed(False) 
+        app.setQuitOnLastWindowClosed(False) 
 
-    # ==========================================
-    # 🚀 SPLASH SCREEN (VENTANA DE CARGA)
-    # ==========================================
-    splash_pix = QPixmap(resource_path("assets/IA.png"))
-    splash_pix = splash_pix.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-    
-    splash = QSplashScreen(splash_pix, Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
-    splash.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-    splash.show()
-    
-    # Procesar eventos para que el Splash se dibuje mientras cargamos la IA
-    app.processEvents() 
-    
-    # Inicializar Ventana Principal
-    window = PNGTuberApp()
-    
-    window.show()
-    
-    # Cerrar Splash suavemente
-    splash.finish(window)
-    
-    sys.exit(app.exec())
+        # ==========================================
+        # 🚀 SPLASH SCREEN (VENTANA DE CARGA)
+        # ==========================================
+        splash_pix = QPixmap(resource_path("assets/IA.png"))
+        splash_pix = splash_pix.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        
+        splash = QSplashScreen(splash_pix, Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
+        splash.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        splash.show()
+        
+        app.processEvents() 
+        
+        window = PNGTuberApp()
+        window.show()
+        splash.finish(window)
+        
+        sys.exit(app.exec())
+        
+    except Exception as e:
+        print("\n" + "="*50)
+        print("🚨 ¡ERROR FATAL DETECTADO EN EL ARRANQUE! 🚨")
+        print("="*50)
+        traceback.print_exc()
+        print("="*50)
+        input("Presiona Enter para cerrar...") # Evita que WSL cierre la terminal de golpe
+        sys.exit(1)

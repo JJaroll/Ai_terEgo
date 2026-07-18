@@ -1,6 +1,6 @@
 [Setup]
 AppName=AIterEgo
-AppVersion=1.1.0
+AppVersion=1.2.0
 AppPublisher=JJaroll
 DefaultDirName={autopf}\AIterEgo
 DefaultGroupName=AIterEgo
@@ -13,7 +13,7 @@ SolidCompression=yes
 PrivilegesRequired=lowest
 
 [Tasks]
-Name: "desktopicon"; Description: "Crear un acceso directo en el Escritorio"; GroupDescription: "Accesos directos adicionales:"
+Name: "desktopicon"; Description: "{cm:TaskDesktopIcon}"; GroupDescription: "{cm:TaskGroup}"
 
 [Files]
 ; Archivos fuente y scripts de entorno
@@ -40,6 +40,8 @@ Name: "ja"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [CustomMessages]
 ; --- Textos en Español ---
+es.TaskDesktopIcon=Crear un acceso directo en el Escritorio
+es.TaskGroup=Accesos directos adicionales:
 es.HwTitle=Aceleración de Hardware
 es.HwSubTitle=Seleccione el motor de inferencia
 es.HwDesc=Por favor seleccione si desea utilizar la GPU (NVIDIA) o solamente la CPU para el análisis emocional.
@@ -49,6 +51,8 @@ es.RunGPU=Instalar componentes IA (Modo GPU)
 es.RunCPU=Instalar componentes IA (Modo CPU)
 
 ; --- Textos en Inglés ---
+en.TaskDesktopIcon=Create a desktop shortcut
+en.TaskGroup=Additional shortcuts:
 en.HwTitle=Hardware Acceleration
 en.HwSubTitle=Select the inference engine
 en.HwDesc=Please select whether you want to use the GPU (NVIDIA) or only the CPU for emotional analysis.
@@ -58,6 +62,8 @@ en.RunGPU=Install AI components (GPU Mode)
 en.RunCPU=Install AI components (CPU Mode)
 
 ; --- Textos en Japonés ---
+ja.TaskDesktopIcon=デスクトップにショートカットを作成する
+ja.TaskGroup=追加のショートカット:
 ja.HwTitle=ハードウェア・アクセラレーション
 ja.HwSubTitle=推論エンジンの選択
 ja.HwDesc=感情分析にGPU（NVIDIA）を使用するか、CPUのみを使用するかを選択してください。

@@ -10,7 +10,7 @@ Licencia: MIT
 """
 
 __author__ = "JJaroll"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __maintainer__ = "JJaroll"
 __status__ = "Production"
 
@@ -20,7 +20,7 @@ import urllib.request
 from PyQt6.QtCore import QThread, pyqtSignal
 
 # --- CONSTANTES ---
-CURRENT_VERSION = "1.1.0"
+CURRENT_VERSION = "1.2.0"
 
 # Repositorio de GitHub donde se publican los releases de la aplicación.
 GITHUB_REPO = "JJaroll/Ai_terego"
