@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     libxcb1 libx11-xcb1 libxkbcommon-x11-0 libxcb-icccm4 \
     libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
     libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \
-    wget curl portaudio19-dev && rm -rf /var/lib/apt/lists/*
+    wget curl file portaudio19-dev && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY requirements.txt .
