@@ -8,7 +8,7 @@ import sys
 import platform
 import numpy as np
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
-                             QComboBox, QSlider, QCheckBox, QTabWidget, 
+                             QComboBox, QSlider, QCheckBox, QTabWidget, QStyleFactory, QStyledItemDelegate, 
                              QWidget, QPushButton, QGroupBox, QFormLayout, 
                              QRadioButton, QButtonGroup, QScrollArea, QGridLayout, QFrame,
                              QTableWidget, QTableWidgetItem, QHeaderView, 
@@ -39,8 +39,9 @@ class AvatarCard(QFrame):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
-        border_color = "#00E64D" if is_active else "#444"
-        bg_color = "#3a3a3a" if is_active else "#333"
+        c = theme_manager.colors()
+        border_color = c['accent'] if is_active else c['group_border']
+        bg_color = c['btn_hover'] if is_active else c['btn_bg']
         border_width = "2px" if is_active else "1px"
         
         self.setStyleSheet(f"""
@@ -50,8 +51,8 @@ class AvatarCard(QFrame):
                 border-radius: 15px;
             }}
             AvatarCard:hover {{
-                background-color: #444;
-                border: 2px solid #666;
+                background-color: {c['tab_bg']};
+                border: 2px solid {c['border']};
             }}
             QLabel {{ border: none; background: transparent; }}
         """)
@@ -113,6 +114,7 @@ class SettingsDialog(QDialog):
         super().__init__(main_window)
         self.main_window = main_window
         self.bg_manager = main_window.bg_manager
+        self.fusion_style = QStyleFactory.create("Fusion")
         
         self.setMinimumSize(640, 520)
         saved_size = main_window.config_manager.get("settings_window_size", None)
@@ -126,9 +128,21 @@ class SettingsDialog(QDialog):
         self.tabs = QTabWidget()
         layout.addWidget(self.tabs)
 
-        self.close_btn = QPushButton()
-        self.close_btn.clicked.connect(self.close)
-        layout.addWidget(self.close_btn)
+        import copy
+        self.original_config = copy.deepcopy(self.main_window.config_manager.config_cache)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        
+        self.save_btn = QPushButton()
+        self.save_btn.clicked.connect(self.save_and_close)
+        
+        self.cancel_btn = QPushButton()
+        self.cancel_btn.clicked.connect(self.cancel_and_close)
+        
+        btn_layout.addWidget(self.save_btn)
+        btn_layout.addWidget(self.cancel_btn)
+        layout.addLayout(btn_layout)
 
         self.last_color_hex = "#00E64D"
 
@@ -137,6 +151,41 @@ class SettingsDialog(QDialog):
 
         i18n.language_changed.connect(self.on_language_changed)
         theme_manager.theme_changed.connect(self.on_theme_changed)
+
+    def save_and_close(self):
+        self.main_window.config_manager._save_to_disk_actual()
+        self.close()
+
+    def cancel_and_close(self):
+        self.main_window.config_manager.config_cache = self.original_config
+        self.main_window.config_manager.save_timer.start()
+
+        try:
+            self.main_window.set_shadow_enabled(self.original_config.get("shadow_enabled", True))
+            self.main_window.set_bounce_enabled(self.original_config.get("bounce_enabled", True))
+            self.main_window.set_bounce_amplitude(self.original_config.get("bounce_amplitude", 10))
+            self.main_window.set_bounce_speed(self.original_config.get("bounce_speed", 0.3))
+            self.main_window.bg_manager.change_background(self.original_config.get("background_color", "transparent"))
+            
+            theme_manager.set_theme(self.original_config.get("theme", "dark"))
+            i18n.set_language(self.original_config.get("language", "es"))
+            
+            self.main_window.set_always_on_top(self.original_config.get("always_on_top", True))
+            
+            if hasattr(self.main_window, 'audio_thread') and self.main_window.audio_thread:
+                if self.main_window.audio_thread.device_index != self.original_config.get("microphone_index"):
+                    self.main_window.update_microphone(self.original_config.get("microphone_index"))
+            
+            self.main_window.hotkey_manager.load_hotkeys()
+            
+            prof = self.original_config.get("current_profile", "Default")
+            if prof != self.main_window.profile_manager.current_profile:
+                self.main_window.bg_manager.change_profile(prof)
+
+        except Exception as e:
+            print(f"Error reverting config: {e}")
+
+        self.close()
 
     def retranslate_ui(self):
         self.setWindowTitle(tr("settings.window_title"))
@@ -157,12 +206,15 @@ class SettingsDialog(QDialog):
         if 0 <= current_tab_index < self.tabs.count():
             self.tabs.setCurrentIndex(current_tab_index)
 
-        self.close_btn.setText(tr("common.close"))
-        self.close_btn.setStyleSheet(theme_manager.close_button_style())
+        self.save_btn.setText(tr("settings.save_close"))
+        self.cancel_btn.setText(tr("common.cancel"))
+        self.save_btn.setStyleSheet(theme_manager.close_button_style())
+        self.cancel_btn.setStyleSheet(theme_manager.close_button_style())
 
     def apply_theme(self):
         self.setStyleSheet(theme_manager.stylesheet())
-        self.close_btn.setStyleSheet(theme_manager.close_button_style())
+        self.save_btn.setStyleSheet(theme_manager.close_button_style())
+        self.cancel_btn.setStyleSheet(theme_manager.close_button_style())
 
     def dim_color(self):
         return theme_manager.colors()['text_dim']
@@ -221,6 +273,8 @@ class SettingsDialog(QDialog):
         layout.setSpacing(15)
 
         self.mic_combo = QComboBox()
+        self.mic_combo.setStyle(self.fusion_style)
+        self.mic_combo.setItemDelegate(QStyledItemDelegate())
         devices = self.main_window.audio_thread.list_devices()
         current_idx = self.main_window.audio_thread.device_index
         idx_map = {}
@@ -265,9 +319,23 @@ class SettingsDialog(QDialog):
 
     # --- PESTAÑA APARIENCIA ---
     def create_visual_tab(self):
+        outer_tab = QWidget()
+        outer_tab.setStyleSheet("background-color: transparent;")
+        outer_layout = QVBoxLayout(outer_tab)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setStyleSheet("QScrollArea { background: transparent; }")
+        
         tab = QWidget()
+        tab.setStyleSheet("background-color: transparent;")
         layout = QVBoxLayout(tab)
         layout.setContentsMargins(20, 20, 20, 20)
+        
+        scroll.setWidget(tab)
+        outer_layout.addWidget(scroll)
         
         bg_group = QGroupBox(tr("appearance.bg_group"))
         bg_layout = QVBoxLayout()
@@ -313,7 +381,7 @@ class SettingsDialog(QDialog):
 
         self.btn_pick_color = QPushButton(tr("appearance.pick_color"))
         self.btn_pick_color.setFixedSize(100, 35)
-        self.btn_pick_color.setStyleSheet("background-color: #444; border: 1px solid #666;")
+        self.btn_pick_color.setStyleSheet("")
         self.btn_pick_color.clicked.connect(self.open_color_picker)
         
         self.rb_custom.toggled.connect(lambda checked: self.btn_pick_color.setEnabled(True))
@@ -372,14 +440,14 @@ class SettingsDialog(QDialog):
         layout.addWidget(theme_group)
 
         layout.addStretch()
-        return tab
+        return outer_tab
 
     def on_theme_selected(self, theme_key):
-        theme_manager.set_theme(theme_key)
         self.main_window.config_manager.set("theme", theme_key)
+        theme_manager.set_theme(theme_key)
 
     def open_color_picker(self):
-        color = QColorDialog.getColor(initial=QColor(self.main_window.current_background), parent=self, title=tr("appearance.color_dialog_title"))
+        color = QColorDialog.getColor(initial=QColor(self.main_window.current_background), parent=None, title=tr("appearance.color_dialog_title"), options=QColorDialog.ColorDialogOption.DontUseNativeDialog)
         if color.isValid():
             rgba = f"rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()})"
             self.bg_manager.change_background(rgba)
@@ -745,6 +813,8 @@ class SettingsDialog(QDialog):
         lang_group = QGroupBox(tr("system.language_group"))
         lang_layout = QFormLayout()
         self.lang_combo = QComboBox()
+        self.lang_combo.setStyle(self.fusion_style)
+        self.lang_combo.setItemDelegate(QStyledItemDelegate())
         current_lang = self.main_window.config_manager.get("language", "es")
         for code, label in LANGUAGES.items():
             self.lang_combo.addItem(label, code)
@@ -768,6 +838,8 @@ class SettingsDialog(QDialog):
         ai_layout = QFormLayout()
 
         self.model_combo = QComboBox()
+        self.model_combo.setStyle(self.fusion_style)
+        self.model_combo.setItemDelegate(QStyledItemDelegate())
         current_model = self.main_window.config_manager.get("ai_model", "spanish")
 
         for key, config in SUPPORTED_MODELS.items():
@@ -887,13 +959,31 @@ class SettingsDialog(QDialog):
 
     # --- PESTAÑA ABOUT ---
     def create_about_tab(self):
+        outer_tab = QWidget()
+        outer_tab.setStyleSheet("background-color: transparent;")
+        outer_layout = QVBoxLayout(outer_tab)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setStyleSheet("QScrollArea { background: transparent; }")
+        
         tab = QWidget()
+        tab.setStyleSheet("background-color: transparent;")
         layout = QVBoxLayout(tab)
         layout.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
         layout.setContentsMargins(40, 40, 40, 40)
         layout.setSpacing(15)
+        
+        scroll.setWidget(tab)
+        outer_layout.addWidget(scroll)
+
+        icon_layout = QHBoxLayout()
+        icon_layout.addStretch()
 
         lbl_icon = QLabel()
+        lbl_icon.setFixedSize(128, 128)
         icon_path = os.path.join(os.path.dirname(__file__), "assets", "IA.png")
         
         if os.path.exists(icon_path):
@@ -908,7 +998,10 @@ class SettingsDialog(QDialog):
             lbl_icon.setStyleSheet("font-size: 64px;")
 
         lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_icon)
+        icon_layout.addWidget(lbl_icon)
+        icon_layout.addStretch()
+        
+        layout.addLayout(icon_layout)
 
         c = theme_manager.colors()
 
@@ -954,9 +1047,26 @@ class SettingsDialog(QDialog):
         lbl_license.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_license)
 
+        btn_terms = QPushButton("Terms of Service & Privacy Policy")
+        btn_terms.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                color: {c['text_dim']};
+                border: none;
+                font-size: 11px;
+                font-style: italic;
+                text-decoration: underline;
+            }}
+            QPushButton:hover {{ color: {c['text']}; }}
+        """)
+        btn_terms.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_terms.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/JJaroll/Ai_terEgo/blob/main/TERMS.md")))
+        layout.addWidget(btn_terms, alignment=Qt.AlignmentFlag.AlignHCenter)
+
         layout.addSpacing(20)
 
         btn_kofi = QPushButton(tr("about.support_kofi"))
+        btn_kofi.setFixedWidth(250)
         btn_kofi.setStyleSheet("""
             QPushButton {
                 background-color: #FF5E5B;
@@ -970,9 +1080,10 @@ class SettingsDialog(QDialog):
         """)
         btn_kofi.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_kofi.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://ko-fi.com/jjaroll")))
-        layout.addWidget(btn_kofi)
+        layout.addWidget(btn_kofi, alignment=Qt.AlignmentFlag.AlignHCenter)
 
-        btn_github = QPushButton(tr("about.view_github"))
+        btn_github = QPushButton("💻 " + tr("about.view_github"))
+        btn_github.setFixedWidth(250)
         btn_github.setStyleSheet("""
             QPushButton {
                 background-color: #24292e;
@@ -998,10 +1109,10 @@ class SettingsDialog(QDialog):
             QPushButton:hover {{ color: {c['text']}; }}
         """)
         btn_bug.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_bug.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/JJaroll/Ai_terego/issues")))
+        btn_bug.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/JJaroll/Ai_terEgo/issues/new")))
 
-        layout.addWidget(btn_github)
-        layout.addWidget(btn_bug)
+        layout.addWidget(btn_github, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(btn_bug, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         layout.addStretch()
-        return tab
+        return outer_tab

@@ -160,7 +160,8 @@ class PNGTuberApp(QMainWindow):
         # Flags Cruciales para Mac
         self.setWindowFlags(self.base_window_flags())
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.resize(500, 500)
+        self.resize(600, 600)
+        self.setMinimumSize(600, 600)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -415,15 +416,15 @@ class PNGTuberApp(QMainWindow):
         target_width = current_width
         
         if should_show:
+            self.setMinimumWidth(750)
             self.expand_btn.setText("‹")
             self.expand_btn.setToolTip(tr("tooltip.less_emotions"))
-            if current_width < 600:
-                target_width = 600
+            if current_width < 750:
+                target_width = 750
         else:
+            self.setMinimumWidth(600)
             self.expand_btn.setText("›")
             self.expand_btn.setToolTip(tr("tooltip.more_emotions"))
-            if current_width > 500:
-                target_width = 500
         
         if target_width != current_width:
             self.animation = QPropertyAnimation(self, b"size")

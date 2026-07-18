@@ -10,6 +10,12 @@ Todas las versiones, cambios notables y mejoras de este proyecto serán document
 - **Docker AppImage:** Aislamiento del entorno de compilación en Linux a través de un contenedor Docker para generar AppImages estables y evitar librerías host ruidosas.
 - **Prevención de Bugs:** Solución al problema del anidamiento de carpetas generado por PyInstaller (`dist/AIterEgo/AIterEgo`) en macOS y Linux.
 - **Arranque Seguro:** Lógica a prueba de fallos para arranques sin dispositivos de audio o entornos WSL, controlando y registrando excepciones para evitar cierres súbitos.
+- **Soporte Multiidioma Extendido:** Traducción completa de la interfaz gráfica a Inglés y Japonés (además de Español), incluyendo atajos por defecto.
+- **Nuevos Modelos IA:** Integración de un modelo en inglés para detección de emociones (`ehcalabres/wav2vec2...`), seleccionable de forma dinámica desde Configuración.
+- **Refinamiento de Interfaz (UI/UX):** Restricciones de redimensionamiento responsivas, arreglos críticos en menús nativos de macOS (legibilidad en modo claro/oscuro) y ajustes de anchos.
+- **Nueva Lógica de Configuración:** La ventana de ajustes ahora separa "Guardar" y "Cancelar", permitiendo previsualizar los cambios en el avatar en tiempo real y revertirlos sin afectar la configuración original.
+- **Actualización Pestaña Sobre:** Inclusión de botón para reporte directo de bugs en GitHub y un enlace integrado a los Términos de Servicio y Privacidad.
+
 
 ## [v1.1.1] - 2026-07-16
 ### Fixes

@@ -23,11 +23,13 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
 from PyQt6.QtCore import Qt
 
 from i18n import tr
+from theme_manager import theme_manager
 
 class ProfileCreatorDialog(QDialog):
     def __init__(self, parent=None, avatars_dir="avatars", edit_profile_name=None):
         super().__init__(parent)
         self.edit_mode = edit_profile_name is not None
+        self.setStyleSheet(theme_manager.stylesheet())
         self.edit_profile_name = edit_profile_name
 
         title = tr("creator.edit_title", name=edit_profile_name) if self.edit_mode else tr("creator.create_title")
@@ -45,7 +47,7 @@ class ProfileCreatorDialog(QDialog):
         if self.edit_mode:
             self.name_input.setText(edit_profile_name)
             self.name_input.setReadOnly(True)
-            self.name_input.setStyleSheet("background-color: #333; color: #888;")
+            self.name_input.setEnabled(False)
         else:
             self.name_input.setPlaceholderText(tr("creator.name_placeholder"))
 
@@ -57,7 +59,9 @@ class ProfileCreatorDialog(QDialog):
         # Sección 2: Grid
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { background: transparent; }")
         content = QWidget()
+        content.setStyleSheet("background-color: transparent;")
         self.grid = QGridLayout(content)
 
         self.slots = [

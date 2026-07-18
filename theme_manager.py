@@ -113,7 +113,10 @@ class ThemeManager(QObject):
             QSlider::groove:horizontal {{ border: 1px solid {c['border']}; height: 6px; background: {c['input_bg']}; border-radius: 3px; }}
             QSlider::handle:horizontal {{ background: {c['accent']}; width: 16px; margin: -5px 0; border-radius: 8px; }}
             QComboBox {{ background: {c['input_bg']}; color: {c['input_text']}; border: 1px solid {c['input_border']}; padding: 6px; border-radius: 4px; }}
-            QComboBox QAbstractItemView {{ background: {c['input_bg']}; color: {c['input_text']}; selection-background-color: {c['accent']}; }}
+            QComboBox QAbstractItemView {{ background-color: {c['input_bg']}; color: {c['input_text']}; selection-background-color: {c['accent']}; border: 1px solid {c['border']}; outline: none; }}
+            QComboBox QAbstractItemView::item {{ background-color: {c['input_bg']}; color: {c['input_text']}; padding: 4px; }}
+            QComboBox QAbstractItemView::item:selected {{ background-color: {c['accent']}; color: {c['accent_text']}; }}
+            QComboBox::drop-down {{ border: none; }}
             QScrollArea {{ border: none; background: transparent; }}
             QTableWidget {{ background-color: {c['table_bg']}; border: 1px solid {c['table_border']}; border-radius: 6px; gridline-color: {c['table_grid']}; color: {c['text']}; }}
             QHeaderView::section {{ background-color: {c['header_bg']}; color: {c['header_text']}; padding: 5px; border: none; font-weight: bold; }}

@@ -29,6 +29,7 @@ _STRINGS = {
 
     # --- Ventana de Configuración ---
     "settings.window_title": ("Configuración - (AI)terEgo", "Settings - (AI)terEgo", "設定 - (AI)terEgo"),
+    "settings.save_close": ("Guardar y Cerrar", "Save & Close", "保存して閉じる"),
     "tab.audio": ("🎙️ Audio", "🎙️ Audio", "🎙️ 音声"),
     "tab.appearance": ("🎨 Apariencia", "🎨 Appearance", "🎨 外観"),
     "tab.avatar": ("👕 Avatar", "👕 Avatar", "👕 アバター"),
