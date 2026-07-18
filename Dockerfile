@@ -16,6 +16,8 @@ COPY . .
 
 # Comando maestro: Compila y empaqueta en una sola línea
 CMD ["bash", "-c", "pyinstaller --noconfirm --onedir --windowed --name AIterEgo --add-data 'assets:assets' --add-data 'avatars:avatars' --icon 'assets/IA.png' --collect-all transformers --hidden-import numpy --hidden-import pyaudio main.py && \
+    find dist/AIterEgo -name '__pycache__' -exec rm -rf {} + && \
+    find dist/AIterEgo -name '*.pyc' -delete && \
     mkdir -p AIterEgo.AppDir/usr/bin && \
     cp -r dist/AIterEgo/* AIterEgo.AppDir/usr/bin/ && \
     cp assets/IA.png AIterEgo.AppDir/IA.png && \
